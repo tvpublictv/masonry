@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
+    <!-- Block search engines -->
+    <meta name="robots" content="noindex, nofollow">
+    <title>Architecture Dex v7.11 (Server Auth)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Import Lenis for Smooth Scrolling -->
+    <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        /* --- GRID CONFIGURATION --- */
+        .vmin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45vw, 1fr));
+            gap: 1vmin; 
+            width: 100%;
+        }
+
+        @media (orientation: landscape) {
+            .vmin-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        .one-col-grid {
+            grid-template-columns: min(70vw, 100vh) !important;
+            justify-content: center !important;
+            gap: 1.5vmin; 
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        /* --- SCROLL ANIMATION --- */
+        .scroll-item {
+            opacity: 0;
+            transform: scale(0.90) translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: opacity, transform;
+        }
+
+        .scroll-item.is-visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+        
+        /* --- FILTER ANIMATION --- */
+        #filter-options, #info-options {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: 
+                opacity 0.3s ease-out, 
+                transform 0.3s ease-out,
+                visibility 0s linear 0.3s; 
+        }
+
+        #filter-options.show-menu, #info-options.show-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            transition: 
+                opacity 0.3s ease-out, 
+                transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+                visibility 0s linear 0s; 
+        }
+
+        #project-search-wrapper {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-10px); 
+            transition: 
+                opacity 0.3s ease-out, 
+                transform 0.3s ease-out,
+                visibility 0s linear 0.3s;
+        }
+
+        #project-search-wrapper.show-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            transition: 
+                opacity 0.3s ease-out, 
+                transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1),
+                visibility 0s linear 0s;
+        }
+
+
+        /* --- DROPDOWN SCROLLBAR --- */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        /* --- FADE IN ANIMATIONS --- */
+        .fade-in-slow {
+            animation: fadeInButton 1.75s ease-out forwards;
+        }
+
+        .fade-in-fast {
+            animation: fadeInButton 0.3s ease-out forwards;
+        }
+        
+        @keyframes fadeInButton {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center text-gray-800 select-none">
+
+    <!-- --- TOP LEFT UI CONTAINER (Grouped for Layout Flow) --- -->
+    <div class="fixed top-[max(10px,1.5vmin)] left-[max(10px,1.5vmin)] z-50 flex flex-col items-start gap-[0.5vmin] max-w-[94vw] pointer-events-none">
+        
+        <!-- BUTTONS ROW (Wraps if content is too long) -->
+        <div class="flex flex-row flex-wrap items-start gap-[1vmin] w-full pointer-events-auto">
+            
+            <!-- 1. PROJECTS (FILTERS) MENU -->
+            <div id="filter-wrapper" class="flex flex-col gap-[1vmin] items-start transition-opacity duration-300 relative z-50">
+                <!-- Main Button -->
+                <button id="filter-main-btn" class="
+                    relative z-20 opacity-0
+                    bg-white/30 backdrop-blur-md 
+                    text-gray-900 font-bold text-[max(16px,2vmin)] 
+                    px-[max(12px,3vmin)] py-[max(6px,1vmin)] 
+                    rounded-full shadow-sm hover:bg-white/50 
+                    transition-all duration-200
+                    cursor-default outline-none
+                    flex items-center gap-[1vmin]
+                ">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Projects
+                </button>
+
+                <!-- Sub-Buttons (Categories) -->
+                <div id="filter-options" class="flex flex-col gap-[1vmin] absolute top-full left-0 mt-[1vmin]">
+                    <!-- Wrappers injected by JS -->
+                </div>
+            </div>
+
+            <!-- 2. PROJECT SEARCH -->
+            <div id="project-search-wrapper" class="relative z-40 group">
+                 <div class="
+                    bg-white/30 backdrop-blur-md 
+                    rounded-full shadow-sm 
+                    px-[max(10px,2.5vmin)] py-[max(4px,0.8vmin)]
+                    flex items-center gap-2
+                    hover:bg-white/50 transition-colors duration-300
+                 ">
+                    <!-- Search Icon -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,1.7vmin)] w-[max(14px,1.7vmin)] text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <!-- Input -->
+                    <input type="text" id="project-search-input" placeholder="Search project name..." class="
+                        bg-transparent border-none outline-none 
+                        text-gray-900 font-medium text-[max(14px,1.7vmin)]
+                        w-[20vw] min-w-[150px] placeholder-gray-500
+                        select-text
+                    ">
+                 </div>
+                 
+                 <!-- Project Suggestions Dropdown -->
+                 <div id="project-search-dropdown" class="
+                    absolute left-0 top-full mt-[1vmin] 
+                    min-w-[250px] max-h-[40vh] overflow-y-auto custom-scrollbar
+                    bg-white/90 backdrop-blur-md rounded-[1vmin] 
+                    opacity-0 invisible 
+                    group-hover:opacity-100 group-hover:visible
+                    group-focus-within:opacity-100 group-focus-within:visible
+                    transition-all duration-200 origin-top-left
+                    shadow-xl z-50
+                 ">
+                    <!-- Results injected by JS -->
+                 </div>
+            </div>
+
+            <!-- 3. ACTIVE FILTER DISPLAY -->
+            <button id="active-filter-btn" class="
+                hidden
+                bg-black/80 backdrop-blur-md 
+                text-white font-bold text-[max(14px,1.7vmin)] 
+                px-[max(10px,2.5vmin)] py-[max(6px,1vmin)] 
+                rounded-full shadow-sm hover:bg-black/90 
+                transition-all duration-300
+                cursor-pointer outline-none
+                flex items-center gap-2
+                text-left
+            ">
+                <span id="active-filter-text">Selection</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,2vmin)] w-[max(14px,2vmin)] text-white/70 hover:text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <!-- 4. EXTERNAL LINK -->
+            <a id="external-link-btn" target="_blank" class="
+                hidden
+                bg-white/30 backdrop-blur-md 
+                text-gray-900 font-medium text-[max(14px,1.7vmin)] 
+                px-[max(10px,2.5vmin)] py-[max(4px,0.8vmin)] 
+                rounded-full shadow-sm hover:bg-white/50 
+                transition-all duration-300
+                cursor-pointer outline-none flex items-center gap-2
+                no-underline whitespace-nowrap
+            ">
+                Go to Project
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,1.7vmin)] w-[max(14px,1.7vmin)] text-gray-900/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                </svg>
+            </a>
+        </div>
+
+        <!-- NEW: Project Metadata Container (In Flow) -->
+        <div id="project-metadata" class="
+            hidden flex-col items-start gap-[0.5vmin] 
+            pointer-events-auto select-none
+            transition-all duration-300
+            mt-[0.5vmin]
+        ">
+            <!-- Injected by JS -->
+        </div>
+
+    </div>
+
+    <!-- --- BOTTOM LEFT UI CONTAINER (Info) --- -->
+    <div class="fixed bottom-[max(10px,1.5vmin)] left-[max(10px,1.5vmin)] z-[110] flex flex-col items-start">
+        
+        <!-- INFO BUTTON WRAPPER -->
+        <div id="info-wrapper" class="flex flex-col gap-[1vmin] items-start relative z-50">
+            
+            <!-- Info Dropdown (Disclaimer) -->
+            <div id="info-options" class="
+                absolute bottom-full left-0 mb-[1vmin]
+                w-[max(300px, 25vw)] max-h-[80vh] overflow-y-auto custom-scrollbar
+                bg-white/90 backdrop-blur-md rounded-[1vmin] shadow-xl
+                p-[2vmin]
+                text-left select-none
+            ">
+                <h3 class="text-[max(14px,1.7vmin)] font-bold text-gray-900 mb-[1.5vmin]">
+                    DISCLAIMER & COPYRIGHT NOTICE
+                </h3>
+                
+                <div class="mb-[1.5vmin]">
+                    <h4 class="text-[max(12px,1.5vmin)] font-medium text-gray-800 mb-[0.5vmin]">Personal Non-Commercial Use Only</h4>
+                    <p class="text-[max(11px,1.3vmin)] font-light text-gray-600 leading-snug text-justify" style="text-justify: inter-word;">
+                        This website is a private, password-protected project for personal architectural study and research. It is not open to the general public and generates no revenue.
+                    </p>
+                </div>
+
+                <div class="mb-[1.5vmin]">
+                    <h4 class="text-[max(12px,1.5vmin)] font-medium text-gray-800 mb-[0.5vmin]">External Content</h4>
+                    <p class="text-[max(11px,1.3vmin)] font-light text-gray-600 leading-snug text-justify" style="text-justify: inter-word;">
+                        All images are displayed via inline linking (hotlinking) from their original source URLs. No image files are hosted, stored, or reproduced on this server. All content remains the property of the respective copyright holders.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="text-[max(12px,1.5vmin)] font-medium text-gray-800 mb-[0.5vmin]">Takedown Request</h4>
+                    <p class="text-[max(11px,1.3vmin)] font-light text-gray-600 leading-snug text-justify" style="text-justify: inter-word;">
+                        If you are a copyright owner and object to your content being indexed here, please contact alvaromieresdesantiago@gmail.com for immediate removal.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Main Info Button -->
+            <button id="info-main-btn" class="
+                relative z-20 
+                bg-white/30 backdrop-blur-md 
+                text-gray-900 font-medium text-[max(14px,1.7vmin)] 
+                px-[max(10px,2.5vmin)] py-[max(4px,0.8vmin)] 
+                rounded-full shadow-sm hover:bg-white/50 
+                transition-all duration-300
+                cursor-default outline-none
+                flex items-center gap-[1vmin]
+                fade-in-slow opacity-0
+            ">
+                Disclaimer
+            </button>
+        </div>
+    </div>
+
+    <!-- Error Container -->
+    <div id="error-container" class="hidden w-[80vmin] mt-[4vmin] p-[2vmin] bg-red-50 border border-red-100 rounded-[2vmin] text-red-600 text-center shadow-sm">
+        <strong class="text-[2vmin]">Error:</strong> <span id="error-message" class="text-[2vmin]"></span>
+    </div>
+
+    <!-- Gallery Container -->
+    <div class="w-full p-[1vmin]">
+        <div id="gallery-grid" class="vmin-grid">
+            <!-- Items injected here by JS -->
+        </div>
+    </div>
+
+    <!-- Loading Trigger -->
+    <div id="scroll-trigger" class="mt-[2vmin] mb-[2vmin] py-[1vmin] text-gray-400 font-medium text-[1.5vmin] text-center transition-opacity duration-300 opacity-0">
+        Loading more images...
+    </div>
+
+<script>
+    // --- 1. SETUP & VARS ---
+    console.log("Initializing Architecture Dex...");
+
+    const lenis = new Lenis({
+        duration: 1.5,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        direction: 'vertical',
+        gestureDirection: 'vertical',
+        smooth: true,
+        mouseMultiplier: 0.8,
+        smoothTouch: false,
+        touchMultiplier: 1.5,
+    });
+
+    function raf(time) {
+        lenis.raf(time);
+        requestAnimationFrame(raf);
+    }
+    requestAnimationFrame(raf);
+
+    const CSV_URL = `https://docs.google.com/spreadsheets/d/1UYf9MzEORDG36Lls7dhqCOOtXscJh2_UBQ4IfTPooNM/export?format=csv&gid=0`;
+    const BATCH_SIZE = 18; 
+
+    let galleryItems = []; 
+    let activeFilteredItems = []; 
+    let currentCount = 0;
+    let isLoading = false;
+    let isFilterOpen = false;
+    let isInfoOpen = false; 
+    let isProjectView = false; 
+    let isHovering = false; 
+    
+    let lastActiveFilter = null; 
+    let closeTimeout = null; 
+    let infoCloseTimeout = null; 
+
+    const galleryGrid = document.getElementById('gallery-grid');
+    const scrollTrigger = document.getElementById('scroll-trigger');
+    const filterMainBtn = document.getElementById('filter-main-btn');
+    const filterOptionsContainer = document.getElementById('filter-options');
+    const filterWrapper = document.getElementById('filter-wrapper');
+    
+    const infoWrapper = document.getElementById('info-wrapper');
+    const infoMainBtn = document.getElementById('info-main-btn');
+    const infoOptionsContainer = document.getElementById('info-options');
+
+    const activeFilterBtn = document.getElementById('active-filter-btn');
+    const activeFilterText = document.getElementById('active-filter-text');
+    const externalLinkBtn = document.getElementById('external-link-btn');
+    const projectMetadata = document.getElementById('project-metadata'); 
+    
+    const projectSearchWrapper = document.getElementById('project-search-wrapper');
+    const projectSearchInput = document.getElementById('project-search-input');
+    const projectSearchDropdown = document.getElementById('project-search-dropdown');
+    
+    const subButtonWrappers = [];
+    
+    const filterLabels = [
+        { label: "Author", key: "author" },
+        { label: "Country", key: "country" },
+        { label: "Year", key: "year" },
+        { label: "Material", key: "material" },
+        { label: "Type", key: "type" },
+        { label: "Topic", key: "category" } 
+    ];
+
+    // --- 2. HELPER FUNCTIONS ---
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function splitCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const char = line[i];
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                result.push(current);
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        result.push(current);
+        return result;
+    }
+
+    function getUniqueValues(key) {
+        const values = new Set();
+        galleryItems.forEach(item => {
+            let rawValue = item[key];
+            if (rawValue && rawValue !== 'Unknown' && rawValue !== '') {
+                if (String(rawValue).includes(',')) {
+                    const parts = rawValue.split(',');
+                    parts.forEach(part => {
+                        const cleanPart = part.trim();
+                        const finalVal = cleanPart.replace(/^"|"$/g, '');
+                        if (finalVal) values.add(finalVal);
+                    });
+                } else {
+                    values.add(rawValue);
+                }
+            }
+        });
+        
+        const array = Array.from(values);
+
+        if (key === 'year') {
+            return array.sort((a, b) => {
+                const numA = parseInt(a);
+                const numB = parseInt(b);
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return numB - numA; 
+                }
+                return b.localeCompare(a); 
+            });
+        } else {
+            return array.sort((a, b) => a.localeCompare(b)); 
+        }
+    }
+
+    // --- 3. FILTER LOGIC ---
+
+    function applyFilter(key, value) {
+        console.log(`Filtering by ${key}: ${value}`);
+        
+        const enteringProjectView = (key === 'title');
+
+        if (!enteringProjectView && !isProjectView) {
+            lastActiveFilter = { key: key, value: value };
+        }
+
+        isProjectView = enteringProjectView;
+
+        activeFilteredItems = galleryItems.filter(item => {
+            const itemValue = item[key];
+            if (!itemValue) return false;
+            if (key === 'title') {
+                return itemValue === value; 
+            }
+            return String(itemValue).includes(value);
+        });
+
+        if (isProjectView) {
+            activeFilteredItems.sort((a, b) => a.columnIndex - b.columnIndex);
+        }
+
+        if (isProjectView) {
+            galleryGrid.classList.add('one-col-grid'); 
+            if (activeFilteredItems.length > 0 && activeFilteredItems[0].projectUrl && activeFilteredItems[0].projectUrl !== '#') {
+                externalLinkBtn.href = activeFilteredItems[0].projectUrl;
+                externalLinkBtn.classList.remove('hidden');
+                externalLinkBtn.classList.add('fade-in-fast');
+            } else {
+                externalLinkBtn.classList.add('hidden');
+            }
+        } else {
+            galleryGrid.classList.remove('one-col-grid'); 
+            externalLinkBtn.classList.add('hidden');
+            externalLinkBtn.classList.remove('fade-in-fast');
+        }
+
+        if (isProjectView && activeFilteredItems.length > 0) {
+            const data = activeFilteredItems[0];
+            const hasCategory = data.category && data.category !== 'Unknown' && data.category !== '';
+            
+            const interactiveRowClass = "bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin] flex items-center w-max cursor-pointer hover:bg-white/50 transition-colors";
+            const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] text-gray-700 mr-[0.8vmin]";
+
+            projectMetadata.innerHTML = `
+                <div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-900 leading-snug"
+                     onclick="applyFilter('author', '${data.author.replace(/'/g, "\\'")}')">
+                    <span class="font-bold">${data.author}</span>, 
+                    <span class="font-medium ml-1">${data.country}</span>, 
+                    <span class="font-light ml-1">${data.year}</span>
+                </div>
+                
+                <div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-800 font-medium leading-snug" 
+                     onclick="applyFilter('type', '${data.type.replace(/'/g, "\\'")}')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="${iconClass}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    ${data.type}
+                </div>
+                
+                <div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-800 font-light leading-snug"
+                     onclick="applyFilter('material', '${data.material.replace(/'/g, "\\'")}')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="${iconClass}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                    ${data.material}
+                </div>
+                
+                ${hasCategory ? 
+                `<div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-800 font-medium leading-snug"
+                      onclick="applyFilter('category', '${data.category.replace(/'/g, "\\'")}')">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="${iconClass}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    ${data.category}
+                 </div>` 
+                : ''}
+            `;
+            
+            projectMetadata.classList.remove('hidden');
+            projectMetadata.classList.add('fade-in-fast', 'flex');
+        } else {
+            projectMetadata.classList.add('hidden');
+            projectMetadata.classList.remove('flex');
+            projectMetadata.innerHTML = '';
+        }
+
+        galleryGrid.innerHTML = '';
+        currentCount = 0;
+        
+        closeFilterMenu(true); 
+        filterWrapper.style.display = 'none'; 
+        projectSearchWrapper.style.display = 'none'; 
+
+        activeFilterText.innerText = value;
+        activeFilterBtn.classList.remove('hidden');
+        activeFilterBtn.classList.add('fade-in-fast');
+
+        if (activeFilteredItems.length === 0) {
+            showError("No projects found for this filter.");
+        } else {
+            document.getElementById('error-container').classList.add('hidden');
+            loadNextBatch(); 
+        }
+    }
+
+    function clearFilter() {
+        console.log("Clearing Filter");
+
+        if (isProjectView && lastActiveFilter) {
+            console.log("Restoring previous filter:", lastActiveFilter);
+            applyFilter(lastActiveFilter.key, lastActiveFilter.value);
+            return; 
+        }
+
+        isProjectView = false;
+        lastActiveFilter = null; 
+        galleryGrid.classList.remove('one-col-grid'); 
+
+        projectMetadata.classList.add('hidden');
+        projectMetadata.classList.remove('flex');
+        projectMetadata.innerHTML = '';
+
+        activeFilteredItems = [...galleryItems]; 
+        galleryGrid.innerHTML = '';
+        currentCount = 0;
+
+        activeFilterBtn.classList.add('hidden');
+        activeFilterBtn.classList.remove('fade-in-fast');
+        
+        externalLinkBtn.classList.add('hidden');
+        externalLinkBtn.classList.remove('fade-in-fast');
+
+        filterWrapper.style.display = 'flex'; 
+        projectSearchWrapper.style.display = 'block'; 
+        
+        document.getElementById('error-container').classList.add('hidden');
+        loadNextBatch();
+    }
+
+    activeFilterBtn.onclick = () => {
+        clearFilter();
+    };
+
+    // --- 4. UI GENERATION & EVENTS ---
+
+    function openFilterMenu() {
+        if (closeTimeout) {
+            clearTimeout(closeTimeout);
+            closeTimeout = null;
+        }
+
+        if (isFilterOpen) return;
+        isFilterOpen = true;
+
+        filterMainBtn.classList.remove('bg-white/30', 'text-gray-900', 'hover:bg-white/50');
+        filterMainBtn.classList.add('bg-black/70', 'text-white', 'hover:bg-black/80');
+
+        filterOptionsContainer.classList.add('show-menu');
+        projectSearchWrapper.classList.add('show-menu');
+    }
+
+    function closeFilterMenu(instant = false) {
+        const performClose = () => {
+            const active = document.activeElement;
+            const isInputFocused = active && (
+                active === projectSearchInput || 
+                (active.tagName === 'INPUT' && filterOptionsContainer.contains(active))
+            );
+
+            if (isInputFocused) return;
+
+            if (!isFilterOpen) return;
+            isFilterOpen = false;
+
+            filterMainBtn.classList.remove('bg-black/70', 'text-white', 'hover:bg-black/80');
+            filterMainBtn.classList.add('bg-white/30', 'text-gray-900', 'hover:bg-white/50');
+
+            filterOptionsContainer.classList.remove('show-menu');
+            projectSearchWrapper.classList.remove('show-menu');
+            
+            subButtonWrappers.forEach(wrap => {
+                const dd = wrap.querySelector('.dropdown-content'); 
+                if(dd && dd.classList.contains('absolute')) { 
+                    dd.classList.remove('!opacity-100', '!visible'); 
+                }
+            });
+        };
+
+        if (closeTimeout) {
+            clearTimeout(closeTimeout);
+            closeTimeout = null;
+        }
+
+        if (instant) {
+            performClose();
+        } else {
+            closeTimeout = setTimeout(() => {
+                performClose();
+            }, 400);
+        }
+    }
+
+    filterWrapper.addEventListener('mouseenter', () => {
+        isHovering = true;
+        openFilterMenu();
+    });
+    
+    filterWrapper.addEventListener('mouseleave', () => {
+        isHovering = false;
+        closeFilterMenu(); 
+    });
+
+    // --- Info Menu Logic ---
+    function openInfoMenu() {
+        if (infoCloseTimeout) {
+            clearTimeout(infoCloseTimeout);
+            infoCloseTimeout = null;
+        }
+
+        if (isInfoOpen) return;
+        isInfoOpen = true;
+
+        infoMainBtn.classList.remove('bg-white/30', 'text-gray-900', 'hover:bg-white/50');
+        infoMainBtn.classList.add('bg-black/70', 'text-white', 'hover:bg-black/80');
+
+        infoOptionsContainer.classList.add('show-menu');
+    }
+
+    function closeInfoMenu(instant = false) {
+        const performClose = () => {
+            if (!isInfoOpen) return;
+            isInfoOpen = false;
+
+            infoMainBtn.classList.remove('bg-black/70', 'text-white', 'hover:bg-black/80');
+            infoMainBtn.classList.add('bg-white/30', 'text-gray-900', 'hover:bg-white/50');
+
+            infoOptionsContainer.classList.remove('show-menu');
+        };
+
+        if (infoCloseTimeout) {
+            clearTimeout(infoCloseTimeout);
+            infoCloseTimeout = null;
+        }
+
+        if (instant) {
+            performClose();
+        } else {
+            infoCloseTimeout = setTimeout(() => {
+                performClose();
+            }, 400);
+        }
+    }
+
+    infoWrapper.addEventListener('mouseenter', () => {
+        openInfoMenu();
+    });
+
+    infoWrapper.addEventListener('mouseleave', () => {
+        closeInfoMenu();
+    });
+
+
+    // --- Other UI Events ---
+    projectSearchWrapper.addEventListener('mouseenter', () => {
+        isHovering = true; 
+        openFilterMenu();
+    });
+    projectSearchWrapper.addEventListener('mouseleave', () => {
+        isHovering = false;
+        closeFilterMenu(); 
+    });
+    
+    projectSearchInput.addEventListener('blur', () => {
+        if (!isHovering) {
+            closeFilterMenu();
+        } else {
+            if (isFilterOpen) filterOptionsContainer.classList.add('show-menu');
+        }
+    });
+
+    projectSearchInput.addEventListener('focus', () => {
+        filterOptionsContainer.classList.remove('show-menu');
+    });
+
+
+    filterMainBtn.onclick = (e) => {
+        if (isHovering) return;
+        if (isFilterOpen) closeFilterMenu(true); 
+        else openFilterMenu();
+    };
+
+    infoMainBtn.onclick = (e) => {
+        if (isInfoOpen) closeInfoMenu(true);
+        else openInfoMenu();
+    };
+
+    projectSearchInput.oninput = (e) => {
+        const query = e.target.value.toLowerCase();
+        const items = projectSearchDropdown.querySelectorAll('.search-item');
+        
+        let visibleCount = 0;
+        items.forEach(item => {
+             if (query === '' || item.innerText.toLowerCase().includes(query)) {
+                 item.style.display = 'block';
+                 visibleCount++;
+             } else {
+                 item.style.display = 'none';
+             }
+        });
+        
+        if (visibleCount > 0) {
+            projectSearchDropdown.classList.remove('hidden');
+        }
+    };
+
+    function initProjectSearch() {
+        projectSearchDropdown.innerHTML = '';
+        const uniqueTitles = getUniqueValues('title');
+        
+        uniqueTitles.forEach(title => {
+            const item = document.createElement('div');
+            item.className = `
+                search-item
+                px-[1.5vmin] py-[1vmin] 
+                text-gray-900 text-[max(12px,1.5vmin)] font-medium
+                hover:bg-gray-100 
+                cursor-pointer transition-colors border-b border-gray-200 last:border-0
+            `;
+            item.innerText = title;
+            item.onclick = () => {
+                applyFilter('title', title);
+                projectSearchInput.value = '';
+            };
+            projectSearchDropdown.appendChild(item);
+        });
+    }
+
+
+    function initFilterUI() {
+        filterOptionsContainer.innerHTML = '';
+        subButtonWrappers.length = 0; 
+
+        filterLabels.forEach((filterObj) => {
+            const label = filterObj.label;
+            const key = filterObj.key; 
+
+            const wrapper = document.createElement('div');
+            wrapper.className = `
+                group relative
+                bg-white/30 backdrop-blur-md
+                rounded-full shadow-sm
+                hover:bg-white/50 transition-colors duration-300
+            `; 
+
+            const btn = document.createElement('button');
+            btn.innerText = label;
+            btn.className = `
+                text-gray-900 font-medium text-[max(14px,1.7vmin)] 
+                px-[max(10px,2.5vmin)] py-[max(4px,0.8vmin)] 
+                cursor-default outline-none whitespace-nowrap
+                block w-full text-left rounded-full
+            `;
+            
+            const dropdownOuter = document.createElement('div');
+            dropdownOuter.className = `
+                dropdown-content
+                absolute left-full top-0 
+                -ml-[40px] pl-[calc(40px+1vmin)] 
+                opacity-0 invisible group-hover:opacity-100 group-hover:visible
+                transition-opacity duration-300 origin-left
+                z-50
+            `;
+
+            const dropdownInner = document.createElement('div');
+            dropdownInner.className = `
+                min-w-[180px] max-h-[40vh] overflow-y-auto custom-scrollbar
+                bg-white/90 backdrop-blur-md rounded-[1vmin] 
+                shadow-xl flex flex-col
+            `;
+
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.placeholder = `Search ${label}...`;
+            searchInput.className = `
+                w-full px-[1.5vmin] py-[1vmin] 
+                bg-transparent border-b border-gray-300
+                text-[max(12px,1.5vmin)] text-gray-900 
+                focus:outline-none focus:border-black/50
+                placeholder-gray-400
+                select-text
+            `;
+            searchInput.onclick = (e) => e.stopPropagation();
+            searchInput.oninput = (e) => {
+                const query = e.target.value.toLowerCase();
+                const items = dropdownInner.querySelectorAll('.filter-item'); 
+                items.forEach(item => {
+                    const text = item.innerText.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            };
+            searchInput.addEventListener('blur', () => {
+                if (!isHovering) closeFilterMenu();
+            });
+
+            dropdownInner.appendChild(searchInput);
+
+            const uniqueValues = getUniqueValues(key);
+            if (uniqueValues.length === 0) {
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = "px-4 py-2 text-gray-500 text-sm italic";
+                emptyMsg.innerText = "No options";
+                dropdownInner.appendChild(emptyMsg);
+            } else {
+                uniqueValues.forEach(val => {
+                    const item = document.createElement('div');
+                    item.className = `
+                        filter-item
+                        px-[1.5vmin] py-[1vmin] 
+                        text-gray-900 text-[max(12px,1.5vmin)] font-medium
+                        hover:bg-gray-100 
+                        cursor-pointer transition-colors border-b border-gray-200 last:border-0
+                    `;
+                    item.innerText = val;
+                    item.onclick = () => {
+                        applyFilter(key, val);
+                        searchInput.value = ''; 
+                        dropdownInner.querySelectorAll('.filter-item').forEach(i => i.style.display = 'block');
+                    };
+                    dropdownInner.appendChild(item);
+                });
+            }
+
+            dropdownOuter.appendChild(dropdownInner);
+            
+            searchInput.onclick = (e) => e.stopPropagation();
+
+            wrapper.appendChild(btn);
+            wrapper.appendChild(dropdownOuter);
+            filterOptionsContainer.appendChild(wrapper);
+            subButtonWrappers.push(wrapper);
+        });
+    }
+
+    // --- 5. DATA PARSING ---
+
+    function parseCSV(text) {
+        const lines = text.split(/\r?\n/);
+        const items = [];
+        
+        const COL_TITLE = 0;  
+        const COL_URL = 1; 
+        const COL_AUTHOR = 2; 
+        const COL_YEAR = 3;   
+        const COL_COUNTRY = 4;
+        const COL_MATERIAL = 5;
+        const COL_TYPE = 6;
+        const COL_CATEGORY = 7; 
+        
+        const START_IMG_COL = 9; 
+        const END_IMG_COL = 26;  
+
+        lines.forEach(line => {
+            if (!line.trim()) return;
+            const cols = splitCSVLine(line);
+
+            const title = cols[COL_TITLE] ? cols[COL_TITLE].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Untitled';
+            const projectUrl = cols[COL_URL] ? cols[COL_URL].replace(/^"|"$/g, '').trim() : '#';
+            const author = cols[COL_AUTHOR] ? cols[COL_AUTHOR].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
+            const year = cols[COL_YEAR] ? cols[COL_YEAR].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : '';
+            const country = cols[COL_COUNTRY] ? cols[COL_COUNTRY].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
+            const material = cols[COL_MATERIAL] ? cols[COL_MATERIAL].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
+            const type = cols[COL_TYPE] ? cols[COL_TYPE].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
+            const category = cols[COL_CATEGORY] ? cols[COL_CATEGORY].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
+
+            for (let i = START_IMG_COL; i <= END_IMG_COL; i++) {
+                if (cols[i]) {
+                    const cellContent = cols[i].trim();
+                    if (cellContent.includes('https://') || cellContent.includes('http://')) {
+                        const cleanUrl = cellContent.replace(/^"|"$/g, '').trim();
+                        items.push({
+                            url: cleanUrl,
+                            title: title,
+                            projectUrl: projectUrl, 
+                            author: author,
+                            year: year,
+                            country: country,
+                            material: material,
+                            type: type,
+                            category: category,
+                            columnIndex: i 
+                        });
+                    }
+                }
+            }
+        });
+        return items;
+    }
+
+    function createGridItem(itemData, index) {
+        const anchor = document.createElement('div');
+        
+        if (isProjectView) {
+            anchor.className = 'w-full h-auto relative mb-[4vmin]';
+        } else {
+            anchor.className = 'aspect-square relative';
+        }
+
+        const content = document.createElement('div');
+        content.className = `
+            w-full h-full 
+            group overflow-hidden 
+            bg-gray-200 shadow-sm 
+            scroll-item cursor-pointer
+        `;
+        
+        if (index < BATCH_SIZE) {
+             content.style.transitionDelay = `${(index % 5) * 0.05}s`;
+        }
+
+        const img = document.createElement('img');
+        img.src = itemData.url;
+        
+        if (isProjectView) {
+            img.className = 'w-full h-auto block opacity-0 transition-all duration-700';
+        } else {
+            img.className = 'w-full h-full object-cover block transform transition-transform duration-[1050ms] group-hover:scale-110';
+        }
+        
+        img.loading = 'lazy';
+        img.alt = itemData.title;
+        
+        img.onload = () => {
+            img.classList.remove('opacity-0');
+        };
+        
+        img.onerror = () => {
+            anchor.remove(); 
+        };
+
+        if (!isProjectView) {
+            const textBaseClass = `
+                absolute z-10 text-gray-900 text-[1.5vmin] font-bold 
+                opacity-0 group-hover:opacity-100 transition-opacity duration-300 
+                pointer-events-none
+                bg-white/30 backdrop-blur-md
+                px-[1vmin] py-[0.5vmin]
+            `;
+
+            const titleEl = document.createElement('div');
+            titleEl.className = `${textBaseClass} bottom-[5vmin] left-[1vmin]`;
+            titleEl.innerText = itemData.title;
+
+            const authorEl = document.createElement('div');
+            authorEl.className = `${textBaseClass} bottom-[1vmin] left-[1vmin] font-medium`; 
+            authorEl.innerText = itemData.author;
+
+            const yearEl = document.createElement('div');
+            yearEl.className = `${textBaseClass} bottom-[1vmin] right-[1vmin] text-right font-medium`;
+            yearEl.innerText = itemData.year;
+
+            content.appendChild(titleEl);
+            content.appendChild(authorEl);
+            content.appendChild(yearEl);
+        }
+
+        content.onclick = () => {
+            if (isProjectView) {
+                if (itemData.projectUrl && itemData.projectUrl !== '#') {
+                    window.open(itemData.projectUrl, '_blank');
+                }
+            } else {
+                applyFilter('title', itemData.title); 
+            }
+        };
+
+        content.appendChild(img);
+        anchor.appendChild(content);
+        
+        return anchor;
+    }
+
+    const itemObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const animatedContent = entry.target.querySelector('.scroll-item') || entry.target;
+            if (animatedContent.classList.contains('scroll-item')) {
+                if (entry.isIntersecting) {
+                    animatedContent.classList.add('is-visible');
+                } else {
+                    animatedContent.classList.remove('is-visible');
+                }
+            }
+        });
+    }, {
+        threshold: 0.1, 
+        rootMargin: "0px 0px -50px 0px"
+    });
+
+    function loadNextBatch() {
+        if (isLoading || currentCount >= activeFilteredItems.length) return;
+        isLoading = true;
+        scrollTrigger.classList.remove('opacity-0');
+
+        setTimeout(() => {
+            const batchStart = currentCount;
+            let nextBatch = activeFilteredItems.slice(currentCount, currentCount + BATCH_SIZE);
+            
+            let dataIndex = batchStart; 
+            nextBatch.forEach((itemData) => {
+                let itemElement;
+                itemElement = createGridItem(itemData, dataIndex);
+                dataIndex++;
+                
+                galleryGrid.appendChild(itemElement);
+                itemObserver.observe(itemElement);
+            });
+
+            currentCount += activeFilteredItems.slice(batchStart, batchStart + BATCH_SIZE).length;
+            isLoading = false;
+            
+            if (currentCount >= activeFilteredItems.length) {
+                scrollTrigger.style.display = 'none';
+            } else {
+                scrollTrigger.classList.add('opacity-0');
+            }
+        }, 100);
+    }
+
+    function setupInfiniteScroll() {
+        const options = {
+            root: null,
+            rootMargin: '50%', 
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    loadNextBatch();
+                }
+            });
+        }, options);
+
+        observer.observe(scrollTrigger);
+    }
+
+    function showError(msg) {
+        const container = document.getElementById('error-container');
+        const msgSpan = document.getElementById('error-message');
+        container.classList.remove('hidden');
+        msgSpan.innerText = msg;
+    }
+
+    // --- 6. INITIALIZATION ---
+
+    async function initGallery() {
+        try {
+            const response = await fetch(CSV_URL);
+            if (!response.ok) throw new Error("Failed to connect to Google Sheets.");
+            
+            const csvText = await response.text();
+            galleryItems = parseCSV(csvText);
+            
+            activeFilteredItems = [...galleryItems];
+
+            initFilterUI();
+            initProjectSearch();
+            shuffleArray(galleryItems);
+            activeFilteredItems = [...galleryItems];
+
+            if (galleryItems.length === 0) {
+                showError("No valid URLs found in columns J-AA.");
+                return;
+            }
+
+            loadNextBatch();
+            setupInfiniteScroll();
+
+        } catch (error) {
+            console.error(error);
+            showError(error.message || "Unknown error occurred");
+        }
+    }
+
+    window.addEventListener('load', () => {
+        setTimeout(() => {
+            filterMainBtn.classList.add('fade-in-slow');
+            setTimeout(() => filterMainBtn.classList.remove('opacity-0'), 50);
+            
+            infoMainBtn.classList.add('fade-in-slow');
+            setTimeout(() => infoMainBtn.classList.remove('opacity-0'), 50);
+        }, 500); 
+    });
+
+    // --- GLOBAL SEARCH SHORTCUT ---
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
+        if (e.key.length === 1) {
+            if (!isFilterOpen) {
+                openFilterMenu();
+            }
+            projectSearchInput.focus();
+        }
+    });
+
+    initGallery();
+
+</script>
+</body>
+</html>
