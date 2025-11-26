@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.11</title>
+    <title>Tessera v0.8.13</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -210,6 +210,7 @@
     <div id="bottom-nav-container" class="fixed bottom-[max(10px,1.5vmin)] left-1/2 -translate-x-1/2 z-[110] pointer-events-none flex flex-row items-center gap-[1vmin] max-w-[60vw] transition-all duration-300">
         
         <!-- Active Filter (Always visible when active) -->
+        <!-- shrink (1) ensures it shrinks AFTER the other button (which has shrink-10000) -->
         <button id="active-filter-btn" class="
             hidden
             bg-black/80 backdrop-blur-md 
@@ -222,7 +223,7 @@
             flex items-center gap-2
             text-left
             pointer-events-auto
-            min-w-0 flex-shrink
+            min-w-0 shrink
         ">
             <!-- Dynamic Icon Container -->
             <div id="active-filter-icon" class="flex-shrink-0 w-[max(14px,1.7vmin)] h-[max(14px,1.7vmin)]"></div>
@@ -237,20 +238,22 @@
         </button>
 
         <!-- Go to Project (Visible only in Project View) -->
+        <!-- shrink-[10000] forces priority compression. min-w ensures it stops at square aspect ratio -->
         <a id="external-link-btn" target="_blank" class="
             hidden
             bg-white/30 backdrop-blur-md 
             text-gray-900 font-medium text-[max(14px,1.7vmin)] 
             h-[max(32px,4.5vmin)] px-[max(10px,2.5vmin)]
+            min-w-[max(32px,4.5vmin)]
             rounded-full shadow-sm hover:bg-white/50 
             transition-all duration-300
-            cursor-pointer outline-none flex items-center gap-2
+            cursor-pointer outline-none flex items-center justify-center gap-2
             no-underline whitespace-nowrap
             pointer-events-auto
-            flex-shrink-0
+            shrink-[10000] overflow-hidden
         ">
-            Go to Project
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,1.7vmin)] w-[max(14px,1.7vmin)] text-gray-900/70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <span class="truncate">Go to Project</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,1.7vmin)] w-[max(14px,1.7vmin)] text-gray-900/70 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
         </a>
@@ -320,7 +323,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.11...");
+    console.log("Initializing Architecture Dex v0.8.13...");
 
     const lenis = new Lenis({
         duration: 1.5,
