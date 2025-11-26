@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.0</title>
+    <title>Tessera v0.8.2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -42,6 +42,8 @@
             gap: 1.5vmin; 
             padding-left: 0 !important;
             padding-right: 0 !important;
+            /* Added top padding for Project View */
+            padding-top: 12vmin !important; 
         }
 
         /* --- SCROLL ANIMATION --- */
@@ -231,7 +233,7 @@
 
         <!-- ROW 2: METADATA -->
         <div id="project-metadata" class="
-            hidden flex-col items-start gap-[0.5vmin] 
+            hidden flex-col items-start gap-[0.8vmin] 
             w-full pl-[max(10px,1.5vmin)]
             pointer-events-auto select-none
             transition-all duration-300
@@ -305,7 +307,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex...");
+    console.log("Initializing Architecture Dex v0.8.2...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -357,7 +359,7 @@
     const projectMetadata = document.getElementById('project-metadata'); 
     
     const projectSearchWrapper = document.getElementById('project-search-wrapper');
-    const projectSearchInner = document.getElementById('search-bar-inner'); // Target for glass anim
+    const projectSearchInner = document.getElementById('search-bar-inner'); 
     const projectSearchInput = document.getElementById('project-search-input');
     const projectSearchDropdown = document.getElementById('project-search-dropdown');
     
@@ -428,6 +430,24 @@
         }
     }
 
+    // --- METADATA BUTTON BUILDER ---
+    // Added isBold parameter to handle font weight
+    function createButtonHTML(text, filterKey, iconSVG, isBold = false) {
+        // Escape single quotes for the onclick string
+        const safeText = text.replace(/'/g, "\\'");
+        const interactiveRowClass = "bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin] flex items-center w-max cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]";
+        const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] text-gray-700 mr-[0.8vmin]";
+        const fontClass = isBold ? "font-bold" : "font-medium";
+        
+        return `
+            <div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-900 ${fontClass} leading-snug"
+                 onclick="applyFilter('${filterKey}', '${safeText}')">
+                <div class="${iconClass}">${iconSVG}</div>
+                ${text}
+            </div>
+        `;
+    }
+
     // --- FILTER LOGIC ---
     function applyFilter(key, value) {
         console.log(`Filtering by ${key}: ${value}`);
@@ -467,29 +487,68 @@
 
         if (isProjectView && activeFilteredItems.length > 0) {
             const data = activeFilteredItems[0];
-            const hasCategory = data.category && data.category !== 'Unknown' && data.category !== '';
-            const interactiveRowClass = "bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin] flex items-center w-max cursor-pointer hover:bg-white/50 transition-colors";
-            const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] text-gray-700 mr-[0.8vmin]";
+            
+            // --- ICONS ---
+            const iconPerson = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>`;
+            const iconMap = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`;
+            const iconCal = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`;
+            const iconType = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>`;
+            const iconMat = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>`;
+            const iconTopic = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>`;
 
-            projectMetadata.innerHTML = `
-                <div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-900 leading-snug"
-                     onclick="applyFilter('author', '${data.author.replace(/'/g, "\\'")}')">
-                    <span class="font-bold">${data.author}</span>, 
-                    <span class="font-medium ml-1">${data.country}</span>, 
-                    <span class="font-light ml-1">${data.year}</span>
-                </div>
-                <div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-800 font-medium leading-snug" 
-                     onclick="applyFilter('type', '${data.type.replace(/'/g, "\\'")}')">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="${iconClass}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>
-                    ${data.type}
-                </div>
-                <div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-800 font-light leading-snug"
-                     onclick="applyFilter('material', '${data.material.replace(/'/g, "\\'")}')">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="${iconClass}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
-                    ${data.material}
-                </div>
-                ${hasCategory ? `<div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-800 font-medium leading-snug" onclick="applyFilter('category', '${data.category.replace(/'/g, "\\'")}')"><svg xmlns="http://www.w3.org/2000/svg" class="${iconClass}" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>${data.category}</div>` : ''}
-            `;
+            // --- GENERATE BUTTONS ---
+            
+            // 1. Author(s) (Row 1) - Split by comma
+            let row1HTML = `<div class="flex flex-row flex-wrap items-start">`;
+            if (data.author && data.author !== 'Unknown') {
+                const authors = data.author.split(',').map(s => s.trim()).filter(s => s);
+                authors.forEach(a => { 
+                    row1HTML += createButtonHTML(a, 'author', iconPerson, true); // true = bold
+                });
+            }
+            row1HTML += `</div>`;
+
+            // 2. Country, Year (Row 2)
+            let row2HTML = `<div class="flex flex-row flex-wrap items-start">`;
+            row2HTML += createButtonHTML(data.country, 'country', iconMap);
+            if(data.year) row2HTML += createButtonHTML(data.year, 'year', iconCal);
+            row2HTML += `</div>`;
+
+            // 3. Type (Row 3)
+            let row3HTML = '';
+            if (data.type && data.type !== 'Unknown') {
+                const types = data.type.split(',').map(s => s.trim()).filter(s => s);
+                if (types.length > 0) {
+                    row3HTML += `<div class="flex flex-row flex-wrap items-start">`;
+                    types.forEach(t => { row3HTML += createButtonHTML(t, 'type', iconType); });
+                    row3HTML += `</div>`;
+                }
+            }
+
+            // 4. Material (Row 4)
+            let row4HTML = '';
+            if (data.material && data.material !== 'Unknown') {
+                const mats = data.material.split(',').map(s => s.trim()).filter(s => s);
+                if (mats.length > 0) {
+                    row4HTML += `<div class="flex flex-row flex-wrap items-start">`;
+                    mats.forEach(m => { row4HTML += createButtonHTML(m, 'material', iconMat); });
+                    row4HTML += `</div>`;
+                }
+            }
+
+            // 5. Topic/Category (Row 5)
+            let row5HTML = '';
+            if (data.category && data.category !== 'Unknown') {
+                const cats = data.category.split(',').map(s => s.trim()).filter(s => s);
+                if (cats.length > 0) {
+                    row5HTML += `<div class="flex flex-row flex-wrap items-start">`;
+                    cats.forEach(c => { row5HTML += createButtonHTML(c, 'category', iconTopic); });
+                    row5HTML += `</div>`;
+                }
+            }
+
+            projectMetadata.innerHTML = row1HTML + row2HTML + row3HTML + row4HTML + row5HTML;
+            
             projectMetadata.classList.remove('hidden');
             projectMetadata.classList.add('fade-in-fast', 'flex');
         } else {
