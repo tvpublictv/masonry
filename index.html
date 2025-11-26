@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.4</title>
+    <title>Tessera v0.8.5</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -170,11 +170,11 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <!-- Input (Gray Text, Light Font, New Placeholder) -->
+                    <!-- Input (Text Black) -->
                     <input type="text" id="project-search-input" placeholder="Search" class="
                         bg-transparent border-none outline-none 
-                        text-gray-900 font-light text-[max(16px,2vmin)]
-                        w-[20vw] min-w-[150px] placeholder-gray-400
+                        text-black font-light text-[max(16px,2vmin)]
+                        w-[20vw] min-w-[150px] placeholder-gray-500
                         select-text
                     ">
                  </div>
@@ -251,8 +251,27 @@
                 p-[2vmin]
                 text-left select-none
             ">
-                <h3 class="text-[max(14px,1.7vmin)] font-bold text-gray-900 mb-[1.5vmin]">DISCLAIMER</h3>
-                <p class="text-xs text-gray-600 mb-2">Personal non-commercial use only.</p>
+                <h3 class="text-[max(14px,1.7vmin)] font-bold text-gray-900 mb-[1.5vmin]">
+                    DISCLAIMER & COPYRIGHT NOTICE
+                </h3>
+                <div class="mb-[1.5vmin]">
+                    <h4 class="text-[max(12px,1.5vmin)] font-medium text-gray-800 mb-[0.5vmin]">Personal Non-Commercial Use Only</h4>
+                    <p class="text-[max(11px,1.3vmin)] font-light text-gray-600 leading-snug text-justify" style="text-justify: inter-word;">
+                        This website is a private, password-protected project for personal architectural study and research. It is not open to the general public and generates no revenue.
+                    </p>
+                </div>
+                <div class="mb-[1.5vmin]">
+                    <h4 class="text-[max(12px,1.5vmin)] font-medium text-gray-800 mb-[0.5vmin]">External Content</h4>
+                    <p class="text-[max(11px,1.3vmin)] font-light text-gray-600 leading-snug text-justify" style="text-justify: inter-word;">
+                        All images are displayed via inline linking (hotlinking) from their original source URLs. No image files are hosted, stored, or reproduced on this server. All content remains the property of the respective copyright holders.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-[max(12px,1.5vmin)] font-medium text-gray-800 mb-[0.5vmin]">Takedown Request</h4>
+                    <p class="text-[max(11px,1.3vmin)] font-light text-gray-600 leading-snug text-justify" style="text-justify: inter-word;">
+                        If you are a copyright owner and object to your content being indexed here, please contact mieresdesantiago@gmail.com for immediate removal.
+                    </p>
+                </div>
             </div>
             <!-- Main Info Button (Same height class as others for consistency) -->
             <button id="info-main-btn" class="
@@ -285,7 +304,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.4...");
+    console.log("Initializing Architecture Dex v0.8.5...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -698,7 +717,8 @@
             const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] text-gray-900";
             const iconSVG = ICONS[key] || '';
             
-            btn.className = `flex items-center gap-2 text-gray-900 font-medium text-[max(14px,1.7vmin)] px-[max(10px,2.5vmin)] py-[max(4px,0.8vmin)] cursor-pointer outline-none whitespace-nowrap block w-full text-left rounded-full bg-transparent`;
+            // Reduced padding-left to 1.2vmin (approx 6px min) to decrease gap
+            btn.className = `flex items-center gap-2 text-gray-900 font-medium text-[max(14px,1.7vmin)] pl-[max(6px,1.2vmin)] pr-[max(10px,2.5vmin)] py-[max(4px,0.8vmin)] cursor-pointer outline-none whitespace-nowrap block w-full text-left rounded-full bg-transparent`;
             btn.innerHTML = `<div class="${iconClass}">${iconSVG}</div> ${label}`;
             
             const dropdownOuter = document.createElement('div');
