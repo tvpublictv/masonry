@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.6</title>
+    <title>Tessera v0.8.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -191,28 +191,9 @@
                  ">
                  </div>
             </div>
-
-            <!-- 3. ACTIVE FILTER DISPLAY (Project Name) -->
-            <!-- Changed font-bold to font-medium -->
-            <button id="active-filter-btn" class="
-                hidden
-                bg-black/80 backdrop-blur-md 
-                text-white font-medium text-[max(14px,1.7vmin)] 
-                h-[max(32px,4.5vmin)] px-[max(10px,2.5vmin)]
-                rounded-full shadow-sm hover:bg-black/90 
-                transition-all duration-300
-                cursor-pointer outline-none
-                flex items-center gap-2
-                text-left
-            ">
-                <span id="active-filter-text">Selection</span>
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,2vmin)] w-[max(14px,2vmin)] text-white/70 hover:text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
         </div>
 
-        <!-- ROW 3: METADATA (Left Aligned) -->
+        <!-- ROW 2: METADATA (Left Aligned) -->
         <div id="project-metadata" class="
             hidden flex-col items-start gap-[0.8vmin] 
             w-full pl-[max(10px,1.5vmin)]
@@ -224,8 +205,10 @@
 
     </div>
 
-    <!-- --- BOTTOM CENTER CONTAINER (Go To Project) --- -->
-    <div class="fixed bottom-[max(10px,1.5vmin)] left-1/2 -translate-x-1/2 z-[110] pointer-events-none">
+    <!-- --- BOTTOM CENTER CONTAINER (Go To Project & Active Filter) --- -->
+    <div class="fixed bottom-[max(10px,1.5vmin)] left-1/2 -translate-x-1/2 z-[110] pointer-events-none flex flex-col items-center gap-[1vmin]">
+        
+        <!-- Go to Project (Visible only in Project View) -->
         <a id="external-link-btn" target="_blank" class="
             hidden
             bg-white/30 backdrop-blur-md 
@@ -242,6 +225,25 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
         </a>
+
+        <!-- Active Filter (Always visible when active) -->
+        <button id="active-filter-btn" class="
+            hidden
+            bg-black/80 backdrop-blur-md 
+            text-white font-medium text-[max(14px,1.7vmin)] 
+            h-[max(32px,4.5vmin)] px-[max(10px,2.5vmin)]
+            rounded-full shadow-sm hover:bg-black/90 
+            transition-all duration-300
+            cursor-pointer outline-none
+            flex items-center gap-2
+            text-left
+            pointer-events-auto
+        ">
+            <span id="active-filter-text">Selection</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,2vmin)] w-[max(14px,2vmin)] text-white/70 hover:text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
     </div>
 
     <!-- --- BOTTOM LEFT INFO --- -->
@@ -276,17 +278,18 @@
                     </p>
                 </div>
             </div>
-            <!-- Main Info Button (Same height class as others for consistency) -->
+            <!-- Main Info Button -->
             <button id="info-main-btn" class="
                 relative z-20 
                 bg-white/30 backdrop-blur-md 
                 text-gray-900 font-medium text-[max(14px,1.7vmin)] 
-                h-[max(32px,4.5vmin)] px-[max(10px,2.5vmin)]
+                h-[max(32px,4.5vmin)] 
                 rounded-full shadow-sm hover:bg-white/50 
                 transition-all duration-300
                 cursor-default outline-none
-                flex items-center gap-[1vmin]
+                flex items-center justify-center
                 fade-in-slow opacity-0
+                px-[max(10px,2.5vmin)]
             ">
                 Disclaimer
             </button>
@@ -307,7 +310,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.6...");
+    console.log("Initializing Architecture Dex v0.8.7...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -343,14 +346,15 @@
     let closeTimeout = null; 
     let infoCloseTimeout = null; 
 
-    // --- GLOBAL ICONS (Used in Buttons & Metadata) ---
+    // --- GLOBAL ICONS (Updated) ---
     const ICONS = {
         author: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>`,
         country: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`,
         year: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`,
         material: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>`,
-        type: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" /></svg>`,
-        category: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>`
+        type: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>`, // Building-library
+        category: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5" /></svg>`, // Hashtag
+        info: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>` // Info Circle
     };
 
     const galleryGrid = document.getElementById('gallery-grid');
@@ -487,10 +491,18 @@
             } else {
                 externalLinkBtn.classList.add('hidden');
             }
+            // Set Info Button to Icon
+            infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]">${ICONS.info}</div>`;
+            infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
+            infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square');
         } else {
             galleryGrid.classList.remove('one-col-grid'); 
             externalLinkBtn.classList.add('hidden');
             externalLinkBtn.classList.remove('fade-in-fast');
+            // Reset Info Button to Text
+            infoMainBtn.innerText = 'Disclaimer';
+            infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
+            infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
         }
 
         // Populate Metadata
@@ -602,6 +614,11 @@
         activeFilterBtn.classList.remove('fade-in-fast');
         externalLinkBtn.classList.add('hidden');
         externalLinkBtn.classList.remove('fade-in-fast');
+
+        // Reset Info Button
+        infoMainBtn.innerText = 'Disclaimer';
+        infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
+        infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
 
         filterWrapper.style.display = 'flex'; 
         projectSearchWrapper.style.display = 'block'; 
