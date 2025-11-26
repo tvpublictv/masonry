@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.8</title>
+    <title>Tessera v0.8.11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -160,6 +160,7 @@
             <!-- 2. PROJECT SEARCH -->
             <div id="project-search-wrapper" class="relative z-40 group">
                  <!-- Inner Div (Matches Filter Button Height) -->
+                 <!-- Fixed padding left to reduce gap between border and icon -->
                  <div id="search-bar-inner" class="
                     glass-base
                     rounded-full shadow-sm 
@@ -205,11 +206,10 @@
     </div>
 
     <!-- --- BOTTOM CENTER CONTAINER (Go To Project & Active Filter) --- -->
-    <!-- Changed flex-col to flex-row, added max-w to allow shrinking on mobile -->
-    <div class="fixed bottom-[max(10px,1.5vmin)] left-1/2 -translate-x-1/2 z-[110] pointer-events-none flex flex-row items-center gap-[1vmin] max-w-[94vw]">
+    <!-- Added ID for dynamic width adjustment -->
+    <div id="bottom-nav-container" class="fixed bottom-[max(10px,1.5vmin)] left-1/2 -translate-x-1/2 z-[110] pointer-events-none flex flex-row items-center gap-[1vmin] max-w-[60vw] transition-all duration-300">
         
         <!-- Active Filter (Always visible when active) -->
-        <!-- Added min-w-0 for flex shrinking -->
         <button id="active-filter-btn" class="
             hidden
             bg-black/80 backdrop-blur-md 
@@ -237,7 +237,6 @@
         </button>
 
         <!-- Go to Project (Visible only in Project View) -->
-        <!-- Added flex-shrink-0 so it doesnt get squashed -->
         <a id="external-link-btn" target="_blank" class="
             hidden
             bg-white/30 backdrop-blur-md 
@@ -321,7 +320,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.8...");
+    console.log("Initializing Architecture Dex v0.8.11...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -389,6 +388,7 @@
     const projectSearchInner = document.getElementById('search-bar-inner'); 
     const projectSearchInput = document.getElementById('project-search-input');
     const projectSearchDropdown = document.getElementById('project-search-dropdown');
+    const bottomNavContainer = document.getElementById('bottom-nav-container'); // Added reference
     
     const subButtonWrappers = [];
     
@@ -508,6 +508,10 @@
             infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]">${ICONS.info}</div>`;
             infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
             infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square');
+            
+            // Widen bottom container since disclaimer is small
+            bottomNavContainer.classList.remove('max-w-[60vw]');
+            bottomNavContainer.classList.add('max-w-[75vw]');
         } else {
             galleryGrid.classList.remove('one-col-grid'); 
             externalLinkBtn.classList.add('hidden');
@@ -516,6 +520,10 @@
             infoMainBtn.innerText = 'Disclaimer';
             infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
             infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
+            
+            // Narrow bottom container to avoid overlapping text disclaimer
+            bottomNavContainer.classList.remove('max-w-[75vw]');
+            bottomNavContainer.classList.add('max-w-[60vw]');
         }
 
         // Populate Metadata
@@ -596,8 +604,14 @@
         activeFilterText.innerText = value;
         
         // Update Active Filter Icon
-        const iconKey = (key === 'title') ? 'title' : key;
-        activeFilterIcon.innerHTML = ICONS[iconKey] || '';
+        // If key is title, HIDE the icon container. Else show it.
+        if (key === 'title') {
+            activeFilterIcon.classList.add('hidden');
+            activeFilterIcon.innerHTML = '';
+        } else {
+            activeFilterIcon.classList.remove('hidden');
+            activeFilterIcon.innerHTML = ICONS[key] || '';
+        }
 
         activeFilterBtn.classList.remove('hidden');
         activeFilterBtn.classList.add('fade-in-fast');
@@ -637,6 +651,10 @@
         infoMainBtn.innerText = 'Disclaimer';
         infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
         infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
+        
+        // Reset container width
+        bottomNavContainer.classList.remove('max-w-[75vw]');
+        bottomNavContainer.classList.add('max-w-[60vw]');
 
         filterWrapper.style.display = 'flex'; 
         projectSearchWrapper.style.display = 'block'; 
