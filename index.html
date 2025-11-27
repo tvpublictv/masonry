@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.17</title>
+    <title>Tessera v0.8.19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -50,7 +50,8 @@
         /* Portrait Padding Override for One Column Mode */
         @media (orientation: portrait) {
             .one-col-grid {
-                padding-top: 32vmin !important; /* Increased to fit larger buttons/rows */
+                /* Increased top padding to separate image from metadata headers */
+                padding-top: 28vmin !important; 
                 padding-bottom: 11vmin !important; 
             }
         }
@@ -139,7 +140,7 @@
             .project-text-label {
                 display: none;
             }
-            /* Increase Button Sizes in Portrait */
+            /* Increase Button Sizes in Portrait (10% over base) */
             .portrait-lg {
                 height: max(40px, 5.5vmin) !important;
             }
@@ -171,6 +172,7 @@
                     cursor-default outline-none
                     flex items-center justify-center
                     aspect-square
+                    portrait:aspect-square portrait:px-0
                 ">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -199,7 +201,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <!-- Input (Reverted Autocontrast to standard black/gray) -->
+                    <!-- Input (Standard Colors) -->
                     <input type="text" id="project-search-input" placeholder="Search" class="
                         bg-transparent border-none outline-none 
                         text-black font-medium text-[max(16px,2vmin)] portrait-text-lg
@@ -265,6 +267,7 @@
         </button>
 
         <!-- Go to Project -->
+        <!-- Added portrait:aspect-square portrait:px-0 to make it square/circle in portrait -->
         <a id="external-link-btn" target="_blank" class="
             hidden
             bg-white/30 backdrop-blur-md 
@@ -278,6 +281,7 @@
             no-underline whitespace-nowrap
             pointer-events-auto
             shrink-0
+            portrait:aspect-square portrait:px-0
         ">
             <span class="project-text-label">Go to Project</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,1.7vmin)] w-[max(14px,1.7vmin)] portrait-text-lg text-gray-900/70 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -350,7 +354,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.17...");
+    console.log("Initializing Architecture Dex v0.8.19...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -491,11 +495,13 @@
         const safeText = text.replace(/'/g, "\\'");
         // Added portrait padding adjustments
         const interactiveRowClass = "bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]";
-        // Added portrait icon sizing
-        const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(18px,2.25vmin)] portrait:w-[max(18px,2.25vmin)] text-gray-700 mr-[0.8vmin]";
+        
+        // Reverted icon size to 1.1x (10% increase) instead of 1.5x
+        const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-gray-700 mr-[0.8vmin]";
         const fontClass = isBold ? "font-bold" : "font-medium";
-        // Added portrait text sizing
-        const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(18px,2.25vmin)]";
+        
+        // Reverted text size to 1.1x (10% increase)
+        const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]";
         
         return `
             <div class="${interactiveRowClass} ${textSize} text-gray-900 ${fontClass} leading-snug"
@@ -569,14 +575,17 @@
                 externalLinkBtn.classList.add('hidden');
             }
             
+            // OVERLAP FIX: Changed 60vw to 70vw as requested (safer than 82vw from v18 based on query)
+            // Re-read prompt: v0.8.19 prompt says "decrease... from 82vw to 70vw". 
+            // Code below uses 70vw.
             bottomNavContainer.classList.remove('max-w-[60vw]');
-            bottomNavContainer.classList.add('max-w-[75vw]');
+            bottomNavContainer.classList.add('max-w-[70vw]');
         } else {
             galleryGrid.classList.remove('one-col-grid'); 
             externalLinkBtn.classList.add('hidden');
             externalLinkBtn.classList.remove('fade-in-fast');
             
-            bottomNavContainer.classList.remove('max-w-[75vw]');
+            bottomNavContainer.classList.remove('max-w-[70vw]');
             bottomNavContainer.classList.add('max-w-[60vw]');
         }
 
@@ -707,7 +716,7 @@
         updateInfoButtonState();
         
         // Reset container width
-        bottomNavContainer.classList.remove('max-w-[75vw]');
+        bottomNavContainer.classList.remove('max-w-[70vw]');
         bottomNavContainer.classList.add('max-w-[60vw]');
 
         filterWrapper.style.display = 'flex'; 
