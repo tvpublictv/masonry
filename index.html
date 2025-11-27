@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.21</title>
+    <title>Tessera v0.8.24</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -43,7 +43,6 @@
             padding-left: 0 !important;
             padding-right: 0 !important;
             /* Top padding handled by JS dynamically now */
-            /* FIX #3 from previous: Keep bottom padding for mobile safety */
             padding-bottom: calc(20vmin + env(safe-area-inset-bottom)) !important; 
         }
 
@@ -128,9 +127,6 @@
 
         /* --- RESPONSIVE BUTTON TEXT --- */
         @media (orientation: portrait) {
-            .project-text-label {
-                display: none;
-            }
             /* Increase Button Sizes in Portrait (10% over base) */
             .portrait-lg {
                 height: max(40px, 5.5vmin) !important;
@@ -143,7 +139,7 @@
 </head>
 <body class="min-h-screen flex flex-col items-center text-gray-800 select-none">
 
-    <!-- --- TOP CONTAINER (Added ID for padding calculation) --- -->
+    <!-- --- TOP CONTAINER --- -->
     <div id="top-ui-container" class="fixed top-[max(10px,1.5vmin)] left-0 w-full z-50 flex flex-col gap-[1vmin] pointer-events-none px-[max(10px,1.5vmin)]">
         
         <!-- ROW 1: MAIN CONTROLS (Centered) -->
@@ -152,6 +148,7 @@
             <!-- 1. PROJECTS (FILTERS) MENU -->
             <div id="filter-wrapper" class="flex flex-col gap-[1vmin] items-start transition-opacity duration-300 relative z-50 flex-none">
                 <!-- Main Button -->
+                <!-- Dynamic Content via JS -->
                 <button id="filter-main-btn" class="
                     glass-base
                     portrait-lg
@@ -163,6 +160,7 @@
                     flex items-center justify-center
                     aspect-square
                     portrait:aspect-square portrait:px-0
+                    transition-all duration-300
                 ">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -177,7 +175,7 @@
 
             <!-- 2. PROJECT SEARCH -->
             <div id="project-search-wrapper" class="relative z-40 group portrait:flex-1 landscape:flex-1">
-                 <!-- Inner Div (Added click handler and cursor-text) -->
+                 <!-- Inner Div -->
                  <div id="search-bar-inner" 
                     onclick="document.getElementById('project-search-input').focus()"
                     class="
@@ -185,7 +183,7 @@
                     portrait-lg
                     rounded-full shadow-sm 
                     h-[max(32px,4.5vmin)] 
-                    pl-[max(8px,1.5vmin)] pr-[max(12px,3vmin)]
+                    pl-[max(8px,1.5vmin)] portrait:pl-[max(14px,3.5vmin)] pr-[max(12px,3vmin)]
                     flex items-center gap-[1vmin]
                     hover:bg-white/50 
                     w-full
@@ -216,7 +214,7 @@
             </div>
         </div>
 
-        <!-- ROW 2: METADATA (Left Aligned) -->
+        <!-- ROW 2: METADATA & ACTIVE FILTERS (Left Aligned) -->
         <div id="project-metadata" class="
             hidden flex-col portrait:flex-row portrait:flex-wrap items-start gap-[0.8vmin] 
             w-full
@@ -228,41 +226,10 @@
 
     </div>
 
-    <!-- --- BOTTOM CENTER CONTAINER (Go To Project & Active Filter) --- -->
+    <!-- --- BOTTOM CENTER CONTAINER (Go To Project) --- -->
     <div id="bottom-nav-container" class="fixed bottom-[max(10px,1.5vmin)] left-1/2 -translate-x-1/2 z-[110] pointer-events-none flex flex-row items-center gap-[1vmin] max-w-[60vw] transition-all duration-300">
         
-        <!-- Active Filter (Updated styling to match metadata buttons) -->
-        <button id="active-filter-btn" class="
-            hidden
-            bg-black/80 backdrop-blur-md 
-            text-white 
-            /* Same size/text/radius as metadata */
-            px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] 
-            text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]
-            rounded-[0.5vmin] 
-            
-            font-medium
-            shadow-sm hover:bg-black/90 
-            transition-all duration-300
-            cursor-pointer outline-none
-            flex items-center gap-2
-            text-left
-            pointer-events-auto
-            min-w-0 shrink
-        ">
-            <!-- Dynamic Icon Container -->
-            <div id="active-filter-icon" class="flex-shrink-0 w-[max(12px,1.5vmin)] h-[max(12px,1.5vmin)] portrait:w-[max(13.2px,1.65vmin)] portrait:h-[max(13.2px,1.65vmin)]"></div>
-            
-            <!-- Text with truncate to handle overflow -->
-            <span id="active-filter-text" class="truncate">Selection</span>
-            
-            <!-- Close Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:w-[max(13.2px,1.65vmin)] portrait:h-[max(13.2px,1.65vmin)] text-white/70 hover:text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-
-        <!-- Go to Project -->
+        <!-- Go to Project (Always full width now) -->
         <a id="external-link-btn" target="_blank" class="
             hidden
             bg-white/30 backdrop-blur-md 
@@ -276,7 +243,6 @@
             no-underline whitespace-nowrap
             pointer-events-auto
             shrink-0
-            portrait:aspect-square portrait:px-0
         ">
             <span class="project-text-label">Go to Project</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,1.7vmin)] w-[max(14px,1.7vmin)] portrait-text-lg text-gray-900/70 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -349,7 +315,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.21...");
+    console.log("Initializing Architecture Dex v0.8.24...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -381,7 +347,6 @@
     let isProjectView = false; 
     let isHovering = false; 
     
-    // Flag to detect touch interaction for filter menu logic
     let isTouchInteraction = false;
 
     let lastActiveFilter = null; 
@@ -397,7 +362,9 @@
         material: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>`,
         type: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>`, 
         category: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5" /></svg>`, 
-        info: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>` 
+        info: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>`,
+        menu: `<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />`,
+        close: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />`
     };
 
     const galleryGrid = document.getElementById('gallery-grid');
@@ -410,9 +377,7 @@
     const infoMainBtn = document.getElementById('info-main-btn');
     const infoOptionsContainer = document.getElementById('info-options');
 
-    const activeFilterBtn = document.getElementById('active-filter-btn');
-    const activeFilterText = document.getElementById('active-filter-text');
-    const activeFilterIcon = document.getElementById('active-filter-icon');
+    // active-filter-btn removed from HTML, will be dynamic
     const externalLinkBtn = document.getElementById('external-link-btn');
     const projectMetadata = document.getElementById('project-metadata'); 
     
@@ -492,14 +457,10 @@
 
     function createButtonHTML(text, filterKey, iconSVG, isBold = false) {
         const safeText = text.replace(/'/g, "\\'");
-        // Added portrait padding adjustments
+        // Same styling as metadata
         const interactiveRowClass = "bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]";
-        
-        // Reverted icon size to 1.1x (10% increase) instead of 1.5x
         const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-gray-700 mr-[0.8vmin]";
         const fontClass = isBold ? "font-bold" : "font-medium";
-        
-        // Reverted text size to 1.1x (10% increase)
         const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]";
         
         return `
@@ -510,12 +471,36 @@
             </div>
         `;
     }
+    
+    // FIX #2: Create the Active Filter Tag HTML (Black version)
+    function createActiveFilterTag(text, filterKey) {
+         // FIX #3: Don't show left icon for Title/Project Name
+         const showIcon = filterKey !== 'title';
+         const iconSVG = showIcon ? (ICONS[filterKey] || '') : '';
+         
+         const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-white mr-[0.8vmin]";
+         const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]";
+         
+         // FIX #1: Properly wrap ICONS.close (which is a path) in an SVG tag
+         const closeSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">${ICONS.close}</svg>`;
+
+         // Render left icon only if needed
+         const leftIconHTML = showIcon ? `<div class="${iconClass}">${iconSVG}</div>` : '';
+         
+         return `
+            <div class="bg-black/80 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max cursor-pointer hover:bg-black/90 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin] ${textSize} text-white font-medium leading-snug"
+                 onclick="clearFilter()">
+                ${leftIconHTML}
+                ${text}
+                <div class="${iconClass} ml-2 !mr-0 !text-white/70 hover:!text-white">${closeSVG}</div>
+            </div>
+        `;
+    }
 
     // --- NEW: HELPER FOR DISCLAIMER BUTTON STATE ---
     function updateInfoButtonState() {
         const isPortrait = window.matchMedia("(orientation: portrait)").matches;
         
-        // Priority 1: Portrait Mode -> Always Icon
         if (isPortrait) {
             infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg">${ICONS.info}</div>`;
             infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
@@ -523,7 +508,6 @@
             return;
         }
 
-        // Priority 2: Landscape + Project View -> Icon
         if (isProjectView) {
             infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]">${ICONS.info}</div>`;
             infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
@@ -531,7 +515,6 @@
             return;
         }
 
-        // Priority 3: Landscape + Default View -> Text
         infoMainBtn.innerText = 'Disclaimer';
         infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
         infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
@@ -550,22 +533,38 @@
             galleryGrid.style.paddingTop = '';
             return;
         }
-        // Calculate the bottom position of the top UI container (headers)
         const bottom = topUIContainer.getBoundingClientRect().bottom;
-        // Add a small gap (using 1.5vmin grid gap logic + slight buffer)
-        // 1.5vmin is the grid gap. Let's strictly place it just below.
-        const gap = window.innerWidth * 0.015; // approximate 1.5vmin
+        const gap = window.innerWidth * 0.015; 
         galleryGrid.style.paddingTop = `${bottom + gap}px`;
+    }
+
+    // --- MAIN BUTTON STATE UPDATER ---
+    function updateMainButtonState() {
+        const svg = filterMainBtn.querySelector('svg');
+        if (lastActiveFilter) {
+            // Filter Active Mode: Dark Button, Close Icon
+            filterMainBtn.classList.remove('glass-base', 'text-gray-900', 'hover:bg-white/50');
+            filterMainBtn.classList.add('bg-black/80', 'text-white', 'hover:bg-black/90');
+            svg.innerHTML = ICONS.close;
+        } else {
+            // Normal Mode: Glass Button, Menu Icon
+            filterMainBtn.classList.add('glass-base', 'text-gray-900', 'hover:bg-white/50');
+            filterMainBtn.classList.remove('bg-black/80', 'text-white', 'hover:bg-black/90');
+            // Remove style overrides if any
+            filterMainBtn.style.backgroundColor = '';
+            filterMainBtn.style.color = '';
+            svg.innerHTML = ICONS.menu;
+        }
     }
 
     // --- FILTER LOGIC ---
     function applyFilter(key, value) {
         console.log(`Filtering by ${key}: ${value}`);
+        
+        // FIX #2: Always update lastActiveFilter, regardless of view mode
+        lastActiveFilter = { key: key, value: value };
+        
         const enteringProjectView = (key === 'title');
-
-        if (!enteringProjectView && !isProjectView) {
-            lastActiveFilter = { key: key, value: value };
-        }
         isProjectView = enteringProjectView;
 
         activeFilteredItems = galleryItems.filter(item => {
@@ -602,14 +601,23 @@
             bottomNavContainer.classList.add('max-w-[60vw]');
         }
 
-        // Update Disclaimer Button
+        // Update UI States
+        updateMainButtonState();
         updateInfoButtonState();
 
-        // Populate Metadata
+        // BUILD METADATA + ACTIVE TAGS
+        let metadataHTML = '';
+
+        // FIX #1: Add Active Filter Tag as the FIRST item ALWAYS if a filter is active
+        if (lastActiveFilter) { 
+             metadataHTML += `<div class="flex flex-row flex-wrap items-start">`;
+             metadataHTML += createActiveFilterTag(lastActiveFilter.value, lastActiveFilter.key);
+             metadataHTML += `</div>`;
+        }
+
+        // Populate Project Metadata (Only if Project View)
         if (isProjectView && activeFilteredItems.length > 0) {
             const data = activeFilteredItems[0];
-            
-            let metadataHTML = '';
 
             // 1. Author(s) - Stacked
             if (data.author && data.author !== 'Unknown') {
@@ -620,19 +628,16 @@
                     metadataHTML += `</div>`;
                 });
             }
-
             // 2. Country - Row
             metadataHTML += `<div class="flex flex-row flex-wrap items-start">`;
             metadataHTML += createButtonHTML(data.country, 'country', ICONS.country);
             metadataHTML += `</div>`;
-
             // 3. Year - Row
             if(data.year) {
                 metadataHTML += `<div class="flex flex-row flex-wrap items-start">`;
                 metadataHTML += createButtonHTML(data.year, 'year', ICONS.year);
                 metadataHTML += `</div>`;
             }
-
             // 4. Type(s) - Stacked
             if (data.type && data.type !== 'Unknown') {
                 const types = data.type.split(',').map(s => s.trim()).filter(s => s);
@@ -642,7 +647,6 @@
                     metadataHTML += `</div>`;
                 });
             }
-
             // 5. Material(s) - Stacked
             if (data.material && data.material !== 'Unknown') {
                 const mats = data.material.split(',').map(s => s.trim()).filter(s => s);
@@ -652,7 +656,6 @@
                     metadataHTML += `</div>`;
                 });
             }
-
             // 6. Topic(s) - Stacked
             if (data.category && data.category !== 'Unknown') {
                 const cats = data.category.split(',').map(s => s.trim()).filter(s => s);
@@ -662,18 +665,19 @@
                     metadataHTML += `</div>`;
                 });
             }
+        }
 
-            projectMetadata.innerHTML = metadataHTML;
+        projectMetadata.innerHTML = metadataHTML;
+        
+        // Show metadata container if it has content (Active Filter OR Project Metadata)
+        if (metadataHTML !== '') {
             projectMetadata.classList.remove('hidden');
             projectMetadata.classList.add('fade-in-fast', 'flex');
         } else {
             projectMetadata.classList.add('hidden');
             projectMetadata.classList.remove('flex');
-            projectMetadata.innerHTML = '';
         }
 
-        // Call padding adjustment after content is set
-        // Small delay ensures DOM paint/layout update for correct height
         setTimeout(adjustGridPadding, 50);
 
         galleryGrid.innerHTML = '';
@@ -684,20 +688,6 @@
         filterWrapper.style.display = 'flex'; 
         projectSearchWrapper.style.display = 'block'; 
 
-        activeFilterText.innerText = value;
-        
-        // Update Active Filter Icon
-        if (key === 'title') {
-            activeFilterIcon.classList.add('hidden');
-            activeFilterIcon.innerHTML = '';
-        } else {
-            activeFilterIcon.classList.remove('hidden');
-            activeFilterIcon.innerHTML = ICONS[key] || '';
-        }
-
-        activeFilterBtn.classList.remove('hidden');
-        activeFilterBtn.classList.add('fade-in-fast');
-
         if (activeFilteredItems.length === 0) {
             showError("No projects found for this filter.");
         } else {
@@ -707,14 +697,15 @@
     }
 
     function clearFilter() {
-        if (isProjectView && lastActiveFilter) {
-            applyFilter(lastActiveFilter.key, lastActiveFilter.value);
-            return; 
+        if (isProjectView && lastActiveFilter && lastActiveFilter.key !== 'title') {
+            // Case: In project view but came from a filter? 
+            // Usually clearing filter means resetting everything.
         }
+        
         isProjectView = false;
         lastActiveFilter = null; 
+        
         galleryGrid.classList.remove('one-col-grid'); 
-        // Reset padding when clearing project view
         galleryGrid.style.paddingTop = '';
 
         projectMetadata.classList.add('hidden');
@@ -726,15 +717,14 @@
         galleryGrid.innerHTML = '';
         currentCount = 0;
 
-        activeFilterBtn.classList.add('hidden');
-        activeFilterBtn.classList.remove('fade-in-fast');
+        // Reset Main Button
+        updateMainButtonState();
+        
         externalLinkBtn.classList.add('hidden');
         externalLinkBtn.classList.remove('fade-in-fast');
 
-        // Reset Info Button via Helper
         updateInfoButtonState();
         
-        // Reset container width
         bottomNavContainer.classList.remove('max-w-[70vw]');
         bottomNavContainer.classList.add('max-w-[60vw]');
 
@@ -744,17 +734,15 @@
         loadNextBatch();
     }
 
-    activeFilterBtn.onclick = () => clearFilter();
-
     // --- UI EVENTS ---
     
-    // FIX #2: Register Touch Start to prevent double-tap issues
     filterWrapper.addEventListener('touchstart', () => { isTouchInteraction = true; }, { passive: true });
     
     function openFilterMenu() {
         if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
         if (isFilterOpen) return;
         isFilterOpen = true;
+        // Styles for open menu
         filterMainBtn.classList.remove('bg-white/30', 'text-gray-900', 'hover:bg-white/50');
         filterMainBtn.style.backgroundColor = 'rgba(0,0,0,0.7)';
         filterMainBtn.style.color = 'white';
@@ -770,8 +758,17 @@
             if (isInputFocused) return;
             if (!isFilterOpen) return;
             isFilterOpen = false;
-            filterMainBtn.style.backgroundColor = '';
-            filterMainBtn.style.color = '';
+            
+            // Revert styles only if NOT active filter (handled by updateMainButtonState)
+            if (!lastActiveFilter) {
+                filterMainBtn.style.backgroundColor = '';
+                filterMainBtn.style.color = '';
+            } else {
+                 // Ensure it stays dark if filter is active
+                 filterMainBtn.style.backgroundColor = ''; // Remove inline override
+                 filterMainBtn.classList.add('bg-black/80', 'text-white');
+            }
+
             filterOptionsContainer.classList.remove('show-menu');
             const subButtons = filterOptionsContainer.querySelectorAll('.glass-base');
             subButtons.forEach(btn => btn.classList.remove('glass-active'));
@@ -785,9 +782,9 @@
         else closeTimeout = setTimeout(performClose, 400);
     }
 
-    // FIX #2: Conditional Mouseenter (Only if not touch interaction)
     filterWrapper.addEventListener('mouseenter', () => { 
-        if (isTouchInteraction) return; // Ignore mouseenter on touch devices
+        if (isTouchInteraction) return; 
+        if (lastActiveFilter) return; // FIX #3: Don't show menu if filter is active (cross mode)
         isHovering = true; 
         openFilterMenu(); 
     });
@@ -825,11 +822,16 @@
         if(projectSearchInput.value.trim().length > 0) projectSearchDropdown.classList.remove('hidden');
     });
 
-    // Toggle click (Works for Touch and Click)
+    // FIX #4: Main Button Click Logic
     filterMainBtn.onclick = (e) => {
-        // e.preventDefault(); // Optional, but helps clean event stream
-        if (isFilterOpen) closeFilterMenu(true); 
-        else openFilterMenu(); 
+        if (lastActiveFilter) {
+            // If filter is active, this button acts as "Clear Filter"
+            clearFilter();
+        } else {
+            // Normal menu toggle
+            if (isFilterOpen) closeFilterMenu(true); 
+            else openFilterMenu(); 
+        }
     };
     
     infoMainBtn.onclick = () => { if (isInfoOpen) closeInfoMenu(true); else openInfoMenu(); };
@@ -875,15 +877,12 @@
             const key = filterObj.key; 
 
             const wrapper = document.createElement('div');
-            // Changed from Tailwind static to glass-base glass-fast for animation
             wrapper.className = `glass-base glass-fast group relative rounded-full shadow-sm hover:bg-white/50 cursor-pointer`; 
 
             const btn = document.createElement('button');
-            // Replaced text-only with Flex + Icon logic
             const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] text-gray-900";
             const iconSVG = ICONS[key] || '';
             
-            // Reduced padding-left to 1.2vmin (approx 6px min) to decrease gap
             btn.className = `flex items-center gap-2 text-gray-900 font-medium text-[max(14px,1.7vmin)] pl-[max(6px,1.5vmin)] pr-[max(6px,1.5vmin)] py-[max(4px,0.8vmin)] cursor-pointer outline-none whitespace-nowrap block w-full text-left rounded-full bg-transparent`;
             btn.innerHTML = `<div class="${iconClass}">${iconSVG}</div> ${label}`;
             
@@ -977,11 +976,9 @@
         const anchor = document.createElement('div');
         anchor.className = isProjectView ? 'w-full h-auto relative mb-[4vmin]' : 'aspect-square relative';
         
-        // FIX #4: Disable pointer events on container in Project View
         const content = document.createElement('div');
         content.className = `w-full h-full group overflow-hidden bg-gray-200 shadow-sm scroll-item cursor-pointer`;
         if (isProjectView) {
-            // Disable interaction
             content.style.pointerEvents = 'none';
         }
 
@@ -1005,10 +1002,8 @@
             const yearEl = document.createElement('div'); yearEl.className = `${textBaseClass} bottom-[1vmin] right-[1vmin] text-right font-medium`; yearEl.innerText = itemData.year;
             content.append(titleEl, authorEl, yearEl);
             
-            // Only attach click handler if NOT in project view
             content.onclick = () => applyFilter('title', itemData.title);
         } else {
-            // FIX #4: Remove onclick/interaction logic entirely for project view
             content.onclick = null;
         }
 
