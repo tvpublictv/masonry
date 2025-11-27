@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.19</title>
+    <title>Tessera v0.8.21</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -42,18 +42,9 @@
             gap: 1.5vmin; 
             padding-left: 0 !important;
             padding-right: 0 !important;
-            /* Top padding for Project View to clear nav */
-            padding-top: 14vmin !important; 
-            padding-bottom: 7vmin !important; /* Half of top padding */
-        }
-
-        /* Portrait Padding Override for One Column Mode */
-        @media (orientation: portrait) {
-            .one-col-grid {
-                /* Increased top padding to separate image from metadata headers */
-                padding-top: 28vmin !important; 
-                padding-bottom: 11vmin !important; 
-            }
+            /* Top padding handled by JS dynamically now */
+            /* FIX #3 from previous: Keep bottom padding for mobile safety */
+            padding-bottom: calc(20vmin + env(safe-area-inset-bottom)) !important; 
         }
 
         /* --- SCROLL ANIMATION --- */
@@ -152,16 +143,15 @@
 </head>
 <body class="min-h-screen flex flex-col items-center text-gray-800 select-none">
 
-    <!-- --- TOP CONTAINER --- -->
-    <div class="fixed top-[max(10px,1.5vmin)] left-0 w-full z-50 flex flex-col gap-[1vmin] pointer-events-none px-[max(10px,1.5vmin)]">
+    <!-- --- TOP CONTAINER (Added ID for padding calculation) --- -->
+    <div id="top-ui-container" class="fixed top-[max(10px,1.5vmin)] left-0 w-full z-50 flex flex-col gap-[1vmin] pointer-events-none px-[max(10px,1.5vmin)]">
         
         <!-- ROW 1: MAIN CONTROLS (Centered) -->
-        <!-- Added w-full and px logic to parent, removed justify-center to allow stretch in portrait -->
         <div class="w-full landscape:w-[33vw] flex flex-row flex-wrap items-center gap-[1vmin] pointer-events-auto justify-center md:justify-center portrait:justify-between mx-auto">
             
             <!-- 1. PROJECTS (FILTERS) MENU -->
             <div id="filter-wrapper" class="flex flex-col gap-[1vmin] items-start transition-opacity duration-300 relative z-50 flex-none">
-                <!-- Main Button (Updated: Always square, removed padding) -->
+                <!-- Main Button -->
                 <button id="filter-main-btn" class="
                     glass-base
                     portrait-lg
@@ -187,8 +177,10 @@
 
             <!-- 2. PROJECT SEARCH -->
             <div id="project-search-wrapper" class="relative z-40 group portrait:flex-1 landscape:flex-1">
-                 <!-- Inner Div -->
-                 <div id="search-bar-inner" class="
+                 <!-- Inner Div (Added click handler and cursor-text) -->
+                 <div id="search-bar-inner" 
+                    onclick="document.getElementById('project-search-input').focus()"
+                    class="
                     glass-base
                     portrait-lg
                     rounded-full shadow-sm 
@@ -197,15 +189,17 @@
                     flex items-center gap-[1vmin]
                     hover:bg-white/50 
                     w-full
-                 ">
+                    cursor-text
+                  ">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <!-- Input (Standard Colors) -->
+                    <!-- Input -->
                     <input type="text" id="project-search-input" placeholder="Search" class="
                         bg-transparent border-none outline-none 
                         text-black font-medium text-[max(16px,2vmin)] portrait-text-lg
-                        w-full min-w-[100px] placeholder-gray-900
+                        w-full min-w-[100px] 
+                        placeholder-gray-900 placeholder:font-light
                         select-text
                     ">
                  </div>
@@ -217,13 +211,12 @@
                     hidden
                     transition-all duration-200 origin-top-left
                     shadow-xl z-50
-                 ">
+                  ">
                  </div>
             </div>
         </div>
 
         <!-- ROW 2: METADATA (Left Aligned) -->
-        <!-- Updated: portrait:flex-row portrait:flex-wrap for row ordering in portrait -->
         <div id="project-metadata" class="
             hidden flex-col portrait:flex-row portrait:flex-wrap items-start gap-[0.8vmin] 
             w-full
@@ -238,15 +231,18 @@
     <!-- --- BOTTOM CENTER CONTAINER (Go To Project & Active Filter) --- -->
     <div id="bottom-nav-container" class="fixed bottom-[max(10px,1.5vmin)] left-1/2 -translate-x-1/2 z-[110] pointer-events-none flex flex-row items-center gap-[1vmin] max-w-[60vw] transition-all duration-300">
         
-        <!-- Active Filter -->
+        <!-- Active Filter (Updated styling to match metadata buttons) -->
         <button id="active-filter-btn" class="
             hidden
             bg-black/80 backdrop-blur-md 
-            portrait-lg
-            text-white font-medium text-[max(14px,1.7vmin)] portrait-text-lg
-            h-[max(32px,4.5vmin)] 
-            pl-[max(8px,1.5vmin)] portrait:pl-[max(12px,3vmin)] pr-[max(8px,1.5vmin)]
-            rounded-full shadow-sm hover:bg-black/90 
+            text-white 
+            /* Same size/text/radius as metadata */
+            px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] 
+            text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]
+            rounded-[0.5vmin] 
+            
+            font-medium
+            shadow-sm hover:bg-black/90 
             transition-all duration-300
             cursor-pointer outline-none
             flex items-center gap-2
@@ -255,19 +251,18 @@
             min-w-0 shrink
         ">
             <!-- Dynamic Icon Container -->
-            <div id="active-filter-icon" class="flex-shrink-0 w-[max(14px,1.7vmin)] h-[max(14px,1.7vmin)] portrait-text-lg"></div>
+            <div id="active-filter-icon" class="flex-shrink-0 w-[max(12px,1.5vmin)] h-[max(12px,1.5vmin)] portrait:w-[max(13.2px,1.65vmin)] portrait:h-[max(13.2px,1.65vmin)]"></div>
             
             <!-- Text with truncate to handle overflow -->
             <span id="active-filter-text" class="truncate">Selection</span>
             
             <!-- Close Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,2vmin)] w-[max(14px,2vmin)] portrait-text-lg text-white/70 hover:text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:w-[max(13.2px,1.65vmin)] portrait:h-[max(13.2px,1.65vmin)] text-white/70 hover:text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
 
         <!-- Go to Project -->
-        <!-- Added portrait:aspect-square portrait:px-0 to make it square/circle in portrait -->
         <a id="external-link-btn" target="_blank" class="
             hidden
             bg-white/30 backdrop-blur-md 
@@ -354,7 +349,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.19...");
+    console.log("Initializing Architecture Dex v0.8.21...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -386,6 +381,9 @@
     let isProjectView = false; 
     let isHovering = false; 
     
+    // Flag to detect touch interaction for filter menu logic
+    let isTouchInteraction = false;
+
     let lastActiveFilter = null; 
     let closeTimeout = null; 
     let infoCloseTimeout = null; 
@@ -423,7 +421,8 @@
     const projectSearchInput = document.getElementById('project-search-input');
     const projectSearchDropdown = document.getElementById('project-search-dropdown');
     const bottomNavContainer = document.getElementById('bottom-nav-container');
-    
+    const topUIContainer = document.getElementById('top-ui-container');
+
     const subButtonWrappers = [];
     
     const filterLabels = [
@@ -539,8 +538,25 @@
     }
 
     // Bind state update to resize
-    window.addEventListener('resize', updateInfoButtonState);
+    window.addEventListener('resize', () => {
+        updateInfoButtonState();
+        adjustGridPadding();
+    });
 
+
+    // --- DYNAMIC PADDING LOGIC ---
+    function adjustGridPadding() {
+        if (!isProjectView) {
+            galleryGrid.style.paddingTop = '';
+            return;
+        }
+        // Calculate the bottom position of the top UI container (headers)
+        const bottom = topUIContainer.getBoundingClientRect().bottom;
+        // Add a small gap (using 1.5vmin grid gap logic + slight buffer)
+        // 1.5vmin is the grid gap. Let's strictly place it just below.
+        const gap = window.innerWidth * 0.015; // approximate 1.5vmin
+        galleryGrid.style.paddingTop = `${bottom + gap}px`;
+    }
 
     // --- FILTER LOGIC ---
     function applyFilter(key, value) {
@@ -575,9 +591,6 @@
                 externalLinkBtn.classList.add('hidden');
             }
             
-            // OVERLAP FIX: Changed 60vw to 70vw as requested (safer than 82vw from v18 based on query)
-            // Re-read prompt: v0.8.19 prompt says "decrease... from 82vw to 70vw". 
-            // Code below uses 70vw.
             bottomNavContainer.classList.remove('max-w-[60vw]');
             bottomNavContainer.classList.add('max-w-[70vw]');
         } else {
@@ -659,6 +672,10 @@
             projectMetadata.innerHTML = '';
         }
 
+        // Call padding adjustment after content is set
+        // Small delay ensures DOM paint/layout update for correct height
+        setTimeout(adjustGridPadding, 50);
+
         galleryGrid.innerHTML = '';
         currentCount = 0;
         
@@ -697,6 +714,8 @@
         isProjectView = false;
         lastActiveFilter = null; 
         galleryGrid.classList.remove('one-col-grid'); 
+        // Reset padding when clearing project view
+        galleryGrid.style.paddingTop = '';
 
         projectMetadata.classList.add('hidden');
         projectMetadata.classList.remove('flex');
@@ -728,6 +747,10 @@
     activeFilterBtn.onclick = () => clearFilter();
 
     // --- UI EVENTS ---
+    
+    // FIX #2: Register Touch Start to prevent double-tap issues
+    filterWrapper.addEventListener('touchstart', () => { isTouchInteraction = true; }, { passive: true });
+    
     function openFilterMenu() {
         if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
         if (isFilterOpen) return;
@@ -762,7 +785,13 @@
         else closeTimeout = setTimeout(performClose, 400);
     }
 
-    filterWrapper.addEventListener('mouseenter', () => { isHovering = true; openFilterMenu(); });
+    // FIX #2: Conditional Mouseenter (Only if not touch interaction)
+    filterWrapper.addEventListener('mouseenter', () => { 
+        if (isTouchInteraction) return; // Ignore mouseenter on touch devices
+        isHovering = true; 
+        openFilterMenu(); 
+    });
+    
     filterWrapper.addEventListener('mouseleave', () => { isHovering = false; closeFilterMenu(); });
 
     function openInfoMenu() {
@@ -796,11 +825,13 @@
         if(projectSearchInput.value.trim().length > 0) projectSearchDropdown.classList.remove('hidden');
     });
 
-    // REMOVED isHovering check to allow toggling via click
-    filterMainBtn.onclick = () => { 
+    // Toggle click (Works for Touch and Click)
+    filterMainBtn.onclick = (e) => {
+        // e.preventDefault(); // Optional, but helps clean event stream
         if (isFilterOpen) closeFilterMenu(true); 
         else openFilterMenu(); 
     };
+    
     infoMainBtn.onclick = () => { if (isInfoOpen) closeInfoMenu(true); else openInfoMenu(); };
 
     projectSearchInput.oninput = (e) => {
@@ -945,8 +976,15 @@
     function createGridItem(itemData, index) {
         const anchor = document.createElement('div');
         anchor.className = isProjectView ? 'w-full h-auto relative mb-[4vmin]' : 'aspect-square relative';
+        
+        // FIX #4: Disable pointer events on container in Project View
         const content = document.createElement('div');
         content.className = `w-full h-full group overflow-hidden bg-gray-200 shadow-sm scroll-item cursor-pointer`;
+        if (isProjectView) {
+            // Disable interaction
+            content.style.pointerEvents = 'none';
+        }
+
         if (index < BATCH_SIZE) content.style.transitionDelay = `${(index % 5) * 0.05}s`;
 
         const img = document.createElement('img');
@@ -966,9 +1004,14 @@
             const authorEl = document.createElement('div'); authorEl.className = `${textBaseClass} bottom-[1vmin] left-[1vmin] font-medium`; authorEl.innerText = itemData.author;
             const yearEl = document.createElement('div'); yearEl.className = `${textBaseClass} bottom-[1vmin] right-[1vmin] text-right font-medium`; yearEl.innerText = itemData.year;
             content.append(titleEl, authorEl, yearEl);
+            
+            // Only attach click handler if NOT in project view
+            content.onclick = () => applyFilter('title', itemData.title);
+        } else {
+            // FIX #4: Remove onclick/interaction logic entirely for project view
+            content.onclick = null;
         }
 
-        content.onclick = () => isProjectView ? (itemData.projectUrl !== '#' && window.open(itemData.projectUrl, '_blank')) : applyFilter('title', itemData.title);
         content.appendChild(img);
         anchor.appendChild(content);
         return anchor;
