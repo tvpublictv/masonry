@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.14</title>
+    <title>Tessera v0.8.17</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -44,6 +44,15 @@
             padding-right: 0 !important;
             /* Top padding for Project View to clear nav */
             padding-top: 14vmin !important; 
+            padding-bottom: 7vmin !important; /* Half of top padding */
+        }
+
+        /* Portrait Padding Override for One Column Mode */
+        @media (orientation: portrait) {
+            .one-col-grid {
+                padding-top: 32vmin !important; /* Increased to fit larger buttons/rows */
+                padding-bottom: 11vmin !important; 
+            }
         }
 
         /* --- SCROLL ANIMATION --- */
@@ -130,60 +139,71 @@
             .project-text-label {
                 display: none;
             }
+            /* Increase Button Sizes in Portrait */
+            .portrait-lg {
+                height: max(40px, 5.5vmin) !important;
+            }
+            .portrait-text-lg {
+                font-size: max(16px, 2.1vmin) !important;
+            }
         }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center text-gray-800 select-none">
 
     <!-- --- TOP CONTAINER --- -->
-    <div class="fixed top-[max(10px,1.5vmin)] left-0 w-full z-50 flex flex-col gap-[1vmin] pointer-events-none">
+    <div class="fixed top-[max(10px,1.5vmin)] left-0 w-full z-50 flex flex-col gap-[1vmin] pointer-events-none px-[max(10px,1.5vmin)]">
         
         <!-- ROW 1: MAIN CONTROLS (Centered) -->
-        <div class="w-full flex flex-row flex-wrap justify-center items-center gap-[1vmin] pointer-events-auto">
+        <!-- Added w-full and px logic to parent, removed justify-center to allow stretch in portrait -->
+        <div class="w-full landscape:w-[33vw] flex flex-row flex-wrap items-center gap-[1vmin] pointer-events-auto justify-center md:justify-center portrait:justify-between mx-auto">
             
             <!-- 1. PROJECTS (FILTERS) MENU -->
-            <div id="filter-wrapper" class="flex flex-col gap-[1vmin] items-start transition-opacity duration-300 relative z-50">
-                <!-- Main Button (Matches Search Bar Height) -->
+            <div id="filter-wrapper" class="flex flex-col gap-[1vmin] items-start transition-opacity duration-300 relative z-50 flex-none">
+                <!-- Main Button (Updated: Always square, removed padding) -->
                 <button id="filter-main-btn" class="
                     glass-base
+                    portrait-lg
                     relative z-20 
                     text-gray-900 
-                    h-[max(32px,4.5vmin)] px-[max(10px,1.5vmin)]
+                    h-[max(32px,4.5vmin)] px-0
                     rounded-full shadow-sm hover:bg-white/50 
                     cursor-default outline-none
                     flex items-center justify-center
+                    aspect-square
                 ">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
 
-                <!-- Sub-Buttons (Added items-start for auto width) -->
+                <!-- Sub-Buttons -->
                 <div id="filter-options" class="flex flex-col items-start gap-[1vmin] absolute top-full left-0 mt-[1vmin]">
                     <!-- JS Injected -->
                 </div>
             </div>
 
             <!-- 2. PROJECT SEARCH -->
-            <div id="project-search-wrapper" class="relative z-40 group">
-                 <!-- Inner Div (Matches Filter Button Height) -->
-                 <!-- Fixed padding left to reduce gap between border and icon -->
+            <div id="project-search-wrapper" class="relative z-40 group portrait:flex-1 landscape:flex-1">
+                 <!-- Inner Div -->
                  <div id="search-bar-inner" class="
                     glass-base
+                    portrait-lg
                     rounded-full shadow-sm 
                     h-[max(32px,4.5vmin)] 
                     pl-[max(8px,1.5vmin)] pr-[max(12px,3vmin)]
                     flex items-center gap-[1vmin]
                     hover:bg-white/50 
+                    w-full
                  ">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
-                    <!-- Input (Text Black, Medium Font) -->
+                    <!-- Input (Reverted Autocontrast to standard black/gray) -->
                     <input type="text" id="project-search-input" placeholder="Search" class="
                         bg-transparent border-none outline-none 
-                        text-black font-medium text-[max(16px,2vmin)]
-                        w-[20vw] min-w-[150px] placeholder-gray-500
+                        text-black font-medium text-[max(16px,2vmin)] portrait-text-lg
+                        w-full min-w-[100px] placeholder-gray-900
                         select-text
                     ">
                  </div>
@@ -201,9 +221,10 @@
         </div>
 
         <!-- ROW 2: METADATA (Left Aligned) -->
+        <!-- Updated: portrait:flex-row portrait:flex-wrap for row ordering in portrait -->
         <div id="project-metadata" class="
-            hidden flex-col items-start gap-[0.8vmin] 
-            w-full pl-[max(10px,1.5vmin)]
+            hidden flex-col portrait:flex-row portrait:flex-wrap items-start gap-[0.8vmin] 
+            w-full
             pointer-events-auto select-none
             transition-all duration-300
             mt-[0.5vmin]
@@ -213,17 +234,16 @@
     </div>
 
     <!-- --- BOTTOM CENTER CONTAINER (Go To Project & Active Filter) --- -->
-    <!-- Added ID for dynamic width adjustment -->
     <div id="bottom-nav-container" class="fixed bottom-[max(10px,1.5vmin)] left-1/2 -translate-x-1/2 z-[110] pointer-events-none flex flex-row items-center gap-[1vmin] max-w-[60vw] transition-all duration-300">
         
-        <!-- Active Filter (Always visible when active) -->
-        <!-- shrink (1) allows it to shrink when space is tight, prioritizing the fixed GoToProject button -->
+        <!-- Active Filter -->
         <button id="active-filter-btn" class="
             hidden
             bg-black/80 backdrop-blur-md 
-            text-white font-medium text-[max(14px,1.7vmin)] 
+            portrait-lg
+            text-white font-medium text-[max(14px,1.7vmin)] portrait-text-lg
             h-[max(32px,4.5vmin)] 
-            pl-[max(8px,1.5vmin)] pr-[max(8px,1.5vmin)]
+            pl-[max(8px,1.5vmin)] portrait:pl-[max(12px,3vmin)] pr-[max(8px,1.5vmin)]
             rounded-full shadow-sm hover:bg-black/90 
             transition-all duration-300
             cursor-pointer outline-none
@@ -233,23 +253,23 @@
             min-w-0 shrink
         ">
             <!-- Dynamic Icon Container -->
-            <div id="active-filter-icon" class="flex-shrink-0 w-[max(14px,1.7vmin)] h-[max(14px,1.7vmin)]"></div>
+            <div id="active-filter-icon" class="flex-shrink-0 w-[max(14px,1.7vmin)] h-[max(14px,1.7vmin)] portrait-text-lg"></div>
             
             <!-- Text with truncate to handle overflow -->
             <span id="active-filter-text" class="truncate">Selection</span>
             
-            <!-- Close Icon (Fixed right) -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,2vmin)] w-[max(14px,2vmin)] text-white/70 hover:text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <!-- Close Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,2vmin)] w-[max(14px,2vmin)] portrait-text-lg text-white/70 hover:text-white flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
 
-        <!-- Go to Project (Visible only in Project View) -->
-        <!-- shrink-0: Prevent shrinking. Text hides via CSS in portrait. -->
+        <!-- Go to Project -->
         <a id="external-link-btn" target="_blank" class="
             hidden
             bg-white/30 backdrop-blur-md 
-            text-gray-900 font-medium text-[max(14px,1.7vmin)] 
+            portrait-lg
+            text-gray-900 font-medium text-[max(14px,1.7vmin)] portrait-text-lg
             h-[max(32px,4.5vmin)] px-[max(10px,2.5vmin)]
             min-w-[max(32px,4.5vmin)]
             rounded-full shadow-sm hover:bg-white/50 
@@ -260,7 +280,7 @@
             shrink-0
         ">
             <span class="project-text-label">Go to Project</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,1.7vmin)] w-[max(14px,1.7vmin)] text-gray-900/70 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-[max(14px,1.7vmin)] w-[max(14px,1.7vmin)] portrait-text-lg text-gray-900/70 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>
         </a>
@@ -302,8 +322,8 @@
             <button id="info-main-btn" class="
                 relative z-20 
                 bg-white/30 backdrop-blur-md 
-                text-gray-900 font-medium text-[max(14px,1.7vmin)] 
-                h-[max(32px,4.5vmin)] 
+                text-gray-900 font-medium text-[max(14px,1.7vmin)] portrait-text-lg
+                h-[max(32px,4.5vmin)] portrait-lg
                 rounded-full shadow-sm hover:bg-white/50 
                 transition-all duration-300
                 cursor-default outline-none
@@ -330,7 +350,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.14...");
+    console.log("Initializing Architecture Dex v0.8.17...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -366,9 +386,9 @@
     let closeTimeout = null; 
     let infoCloseTimeout = null; 
 
-    // --- GLOBAL ICONS (Updated) ---
+    // --- GLOBAL ICONS ---
     const ICONS = {
-        title: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>`, // Document icon for Project
+        title: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>`,
         author: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>`,
         country: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`,
         year: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`,
@@ -398,7 +418,7 @@
     const projectSearchInner = document.getElementById('search-bar-inner'); 
     const projectSearchInput = document.getElementById('project-search-input');
     const projectSearchDropdown = document.getElementById('project-search-dropdown');
-    const bottomNavContainer = document.getElementById('bottom-nav-container'); // Added reference
+    const bottomNavContainer = document.getElementById('bottom-nav-container');
     
     const subButtonWrappers = [];
     
@@ -469,18 +489,52 @@
 
     function createButtonHTML(text, filterKey, iconSVG, isBold = false) {
         const safeText = text.replace(/'/g, "\\'");
-        const interactiveRowClass = "bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin] flex items-center w-max cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]";
-        const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] text-gray-700 mr-[0.8vmin]";
+        // Added portrait padding adjustments
+        const interactiveRowClass = "bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]";
+        // Added portrait icon sizing
+        const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(18px,2.25vmin)] portrait:w-[max(18px,2.25vmin)] text-gray-700 mr-[0.8vmin]";
         const fontClass = isBold ? "font-bold" : "font-medium";
+        // Added portrait text sizing
+        const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(18px,2.25vmin)]";
         
         return `
-            <div class="${interactiveRowClass} text-[max(12px,1.5vmin)] text-gray-900 ${fontClass} leading-snug"
+            <div class="${interactiveRowClass} ${textSize} text-gray-900 ${fontClass} leading-snug"
                  onclick="applyFilter('${filterKey}', '${safeText}')">
                 <div class="${iconClass}">${iconSVG}</div>
                 ${text}
             </div>
         `;
     }
+
+    // --- NEW: HELPER FOR DISCLAIMER BUTTON STATE ---
+    function updateInfoButtonState() {
+        const isPortrait = window.matchMedia("(orientation: portrait)").matches;
+        
+        // Priority 1: Portrait Mode -> Always Icon
+        if (isPortrait) {
+            infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg">${ICONS.info}</div>`;
+            infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
+            infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square');
+            return;
+        }
+
+        // Priority 2: Landscape + Project View -> Icon
+        if (isProjectView) {
+            infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]">${ICONS.info}</div>`;
+            infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
+            infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square');
+            return;
+        }
+
+        // Priority 3: Landscape + Default View -> Text
+        infoMainBtn.innerText = 'Disclaimer';
+        infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
+        infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
+    }
+
+    // Bind state update to resize
+    window.addEventListener('resize', updateInfoButtonState);
+
 
     // --- FILTER LOGIC ---
     function applyFilter(key, value) {
@@ -514,27 +568,20 @@
             } else {
                 externalLinkBtn.classList.add('hidden');
             }
-            // Set Info Button to Icon
-            infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]">${ICONS.info}</div>`;
-            infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
-            infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square');
             
-            // Widen bottom container since disclaimer is small
             bottomNavContainer.classList.remove('max-w-[60vw]');
             bottomNavContainer.classList.add('max-w-[75vw]');
         } else {
             galleryGrid.classList.remove('one-col-grid'); 
             externalLinkBtn.classList.add('hidden');
             externalLinkBtn.classList.remove('fade-in-fast');
-            // Reset Info Button to Text
-            infoMainBtn.innerText = 'Disclaimer';
-            infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
-            infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
             
-            // Narrow bottom container to avoid overlapping text disclaimer
             bottomNavContainer.classList.remove('max-w-[75vw]');
             bottomNavContainer.classList.add('max-w-[60vw]');
         }
+
+        // Update Disclaimer Button
+        updateInfoButtonState();
 
         // Populate Metadata
         if (isProjectView && activeFilteredItems.length > 0) {
@@ -614,7 +661,6 @@
         activeFilterText.innerText = value;
         
         // Update Active Filter Icon
-        // If key is title, HIDE the icon container. Else show it.
         if (key === 'title') {
             activeFilterIcon.classList.add('hidden');
             activeFilterIcon.innerHTML = '';
@@ -657,10 +703,8 @@
         externalLinkBtn.classList.add('hidden');
         externalLinkBtn.classList.remove('fade-in-fast');
 
-        // Reset Info Button
-        infoMainBtn.innerText = 'Disclaimer';
-        infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
-        infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
+        // Reset Info Button via Helper
+        updateInfoButtonState();
         
         // Reset container width
         bottomNavContainer.classList.remove('max-w-[75vw]');
@@ -743,7 +787,11 @@
         if(projectSearchInput.value.trim().length > 0) projectSearchDropdown.classList.remove('hidden');
     });
 
-    filterMainBtn.onclick = () => { if (isHovering) return; if (isFilterOpen) closeFilterMenu(true); else openFilterMenu(); };
+    // REMOVED isHovering check to allow toggling via click
+    filterMainBtn.onclick = () => { 
+        if (isFilterOpen) closeFilterMenu(true); 
+        else openFilterMenu(); 
+    };
     infoMainBtn.onclick = () => { if (isInfoOpen) closeInfoMenu(true); else openInfoMenu(); };
 
     projectSearchInput.oninput = (e) => {
@@ -796,7 +844,7 @@
             const iconSVG = ICONS[key] || '';
             
             // Reduced padding-left to 1.2vmin (approx 6px min) to decrease gap
-            btn.className = `flex items-center gap-2 text-gray-900 font-medium text-[max(14px,1.7vmin)] pl-[max(6px,1.2vmin)] pr-[max(10px,2.5vmin)] py-[max(4px,0.8vmin)] cursor-pointer outline-none whitespace-nowrap block w-full text-left rounded-full bg-transparent`;
+            btn.className = `flex items-center gap-2 text-gray-900 font-medium text-[max(14px,1.7vmin)] pl-[max(6px,1.5vmin)] pr-[max(6px,1.5vmin)] py-[max(4px,0.8vmin)] cursor-pointer outline-none whitespace-nowrap block w-full text-left rounded-full bg-transparent`;
             btn.innerHTML = `<div class="${iconClass}">${iconSVG}</div> ${label}`;
             
             const dropdownOuter = document.createElement('div');
