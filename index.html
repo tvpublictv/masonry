@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.35</title>
+    <title>Tessera v0.8.44</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -53,7 +53,8 @@
             will-change: opacity, transform;
         }
 
-        .scroll-item.is-visible {
+        /* FIX #2: Only animate in when BOTH visible (scroll) AND loaded (image ready) */
+        .scroll-item.is-visible.loaded {
             opacity: 1;
             transform: scale(1) translateY(0);
         }
@@ -109,7 +110,7 @@
             transition: all 0.3s ease;
         }
 
-        a.aesthetic-glass:hover {
+        .aesthetic-glass:hover, .aesthetic-glass-hover:hover {
             background-color: rgba(255, 255, 255, 0.25);
             box-shadow: 
                 inset 0 0 0 1px rgba(255,255,255,0.4),
@@ -121,6 +122,7 @@
             position: absolute;
             inset: 0;
             z-index: 0;
+            border-radius: inherit; 
             background: radial-gradient(circle at 50% 50%, 
                 rgba(255, 255, 255, 0.1) 0%, 
                 rgba(255, 255, 255, 0.3) 50%, 
@@ -134,7 +136,7 @@
             position: absolute;
             inset: 0;
             z-index: 1;
-            border-radius: 9999px;
+            border-radius: inherit;
             background: linear-gradient(
                 180deg, 
                 rgba(255,255,255,0.6) 0%, 
@@ -185,12 +187,13 @@
             -webkit-user-select: none;
         }
 
+        /* --- RESPONSIVE BUTTON TEXT --- */
         @media (orientation: portrait) {
             .portrait-lg {
-                height: max(40px, 5.5vmin) !important;
+                height: max(36px, 5vmin) !important;
             }
             .portrait-text-lg {
-                font-size: max(16px, 2.1vmin) !important;
+                font-size: max(14px, 1.8vmin) !important;
             }
         }
     </style>
@@ -210,21 +213,28 @@
                 <div id="filter-wrapper" class="flex flex-col gap-[1vmin] items-start transition-opacity duration-300 relative z-50 flex-none">
                     <!-- Main Button -->
                     <button id="filter-main-btn" class="
-                        glass-base
+                        aesthetic-glass aesthetic-glass-hover
                         portrait-lg
                         relative z-20 
                         text-gray-900 
                         h-[max(32px,4.5vmin)] px-0
-                        rounded-full shadow-sm hover:bg-white/50 
+                        rounded-full overflow-hidden
                         cursor-default outline-none
                         flex items-center justify-center
                         aspect-square
                         portrait:aspect-square portrait:px-0
                         transition-all duration-300
                     ">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
+                        <!-- Visual Layers -->
+                        <div class="refraction-layer"></div>
+                        <div class="specular-layer"></div>
+                        
+                        <!-- Content -->
+                        <div class="glass-content-wrapper justify-center w-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </div>
                     </button>
 
                     <!-- Sub-Buttons -->
@@ -237,7 +247,7 @@
                 <div id="project-search-wrapper" class="relative z-40 group flex-1">
                      
                      <!-- Aesthetic Glass Container -->
-                     <div class="aesthetic-glass w-full h-[max(32px,4.5vmin)] portrait-lg cursor-text"
+                     <div class="aesthetic-glass aesthetic-glass-hover w-full h-[max(32px,4.5vmin)] portrait-lg cursor-text rounded-full"
                           onclick="document.getElementById('project-search-input').focus()">
                         
                         <!-- Visual Layers -->
@@ -290,7 +300,7 @@
         <!-- Go to Project -->
         <a id="external-link-btn" target="_blank" class="
             hidden
-            aesthetic-glass
+            aesthetic-glass aesthetic-glass-hover
             portrait-lg
             h-[max(32px,4.5vmin)] 
             min-w-[max(32px,4.5vmin)]
@@ -299,6 +309,7 @@
             no-underline whitespace-nowrap
             pointer-events-auto
             shrink-0
+            rounded-full
         ">
             <!-- Visual Layers -->
             <div class="refraction-layer"></div>
@@ -348,18 +359,25 @@
             </div>
             <!-- Main Info Button -->
             <button id="info-main-btn" class="
+                aesthetic-glass aesthetic-glass-hover
                 relative z-20 
-                bg-white/30 backdrop-blur-md 
                 text-gray-900 font-medium text-[max(14px,1.7vmin)] portrait-text-lg
                 h-[max(32px,4.5vmin)] portrait-lg
-                rounded-full shadow-sm hover:bg-white/50 
+                rounded-full overflow-hidden
                 transition-all duration-300
                 cursor-default outline-none
                 flex items-center justify-center
                 fade-in-slow opacity-0
                 px-[max(10px,2.5vmin)]
             ">
-                Disclaimer
+                <!-- Visual Layers -->
+                <div class="refraction-layer"></div>
+                <div class="specular-layer"></div>
+                
+                <!-- Content -->
+                <div class="glass-content-wrapper relative z-10 justify-center">
+                    Disclaimer
+                </div>
             </button>
         </div>
     </div>
@@ -378,7 +396,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.35...");
+    console.log("Initializing Architecture Dex v0.8.44...");
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -432,7 +450,8 @@
         category: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5" /></svg>`, 
         info: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>`,
         menu: `<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />`,
-        close: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />`
+        close: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />`,
+        photographer: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`
     };
 
     const galleryGrid = document.getElementById('gallery-grid');
@@ -450,7 +469,6 @@
     const projectMetadata = document.getElementById('project-metadata'); 
     
     const projectSearchWrapper = document.getElementById('project-search-wrapper');
-    // REMOVED projectSearchInner direct reference as it's now wrapped
     const projectSearchInput = document.getElementById('project-search-input');
     const projectSearchDropdown = document.getElementById('project-search-dropdown');
     const bottomNavContainer = document.getElementById('bottom-nav-container');
@@ -462,6 +480,7 @@
         { label: "Author", key: "author" },
         { label: "Country", key: "country" },
         { label: "Year", key: "year" },
+        { label: "Photographer", key: "photographer" },
         { label: "Material", key: "material" },
         { label: "Type", key: "type" },
         { label: "Topic", key: "category" } 
@@ -525,17 +544,20 @@
 
     function createButtonHTML(text, filterKey, iconSVG, isBold = false) {
         const safeText = text.replace(/'/g, "\\'");
-        // Same styling as metadata
-        const interactiveRowClass = "bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]";
-        const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-gray-700 mr-[0.8vmin]";
+        
+        const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-gray-700 mr-[0.8vmin] flex-shrink-0";
         const fontClass = isBold ? "font-bold" : "font-medium";
         const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]";
         
         return `
-            <div class="${interactiveRowClass} ${textSize} text-gray-900 ${fontClass} leading-snug"
+            <div class="aesthetic-glass aesthetic-glass-hover px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max max-w-[25vw] cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]"
                  onclick="applyFilter('${filterKey}', '${safeText}')">
-                <div class="${iconClass}">${iconSVG}</div>
-                ${text}
+                <div class="refraction-layer"></div>
+                <div class="specular-layer"></div>
+                <div class="glass-content-wrapper ${textSize} text-gray-900 ${fontClass} leading-snug truncate">
+                    <div class="${iconClass}">${iconSVG}</div>
+                    <span class="truncate">${text}</span>
+                </div>
             </div>
         `;
     }
@@ -545,18 +567,18 @@
          const showIcon = filterKey !== 'title';
          const iconSVG = showIcon ? (ICONS[filterKey] || '') : '';
          
-         const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-white mr-[0.8vmin]";
+         const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-white mr-[0.8vmin] flex-shrink-0";
          const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]";
          
          const closeSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">${ICONS.close}</svg>`;
          const leftIconHTML = showIcon ? `<div class="${iconClass}">${iconSVG}</div>` : '';
          
          return `
-            <div class="bg-black/80 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max cursor-pointer hover:bg-black/90 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin] ${textSize} text-white font-medium leading-snug"
+            <div class="bg-black/80 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max max-w-[25vw] cursor-pointer hover:bg-black/90 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin] ${textSize} text-white font-medium leading-snug truncate"
                  onclick="clearFilter()">
                 ${leftIconHTML}
-                ${text}
-                <div class="${iconClass} ml-2 !mr-0 !text-white/70 hover:!text-white">${closeSVG}</div>
+                <span class="truncate">${text}</span>
+                <div class="${iconClass} ml-2 !mr-0 !text-white/70 hover:!text-white flex-shrink-0">${closeSVG}</div>
             </div>
         `;
     }
@@ -565,35 +587,37 @@
     function updateInfoButtonState() {
         const isPortrait = window.matchMedia("(orientation: portrait)").matches;
         
+        const infoBtnContent = document.querySelector('#info-main-btn .glass-content-wrapper');
+        
+        if(infoBtnContent) {
+            infoBtnContent.classList.add('justify-center');
+        }
+
         if (isPortrait) {
-            infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg">${ICONS.info}</div>`;
+            if(infoBtnContent) infoBtnContent.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg">${ICONS.info}</div>`;
             infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
-            infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square');
+            infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square', 'justify-center', 'items-center', 'p-0');
             return;
         }
 
         if (isProjectView) {
-            infoMainBtn.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]">${ICONS.info}</div>`;
+            if(infoBtnContent) infoBtnContent.innerHTML = `<div class="w-[max(16px,2vmin)] h-[max(16px,2vmin)]">${ICONS.info}</div>`;
             infoMainBtn.classList.remove('px-[max(10px,2.5vmin)]');
-            infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square');
+            infoMainBtn.classList.add('p-[max(6px,1vmin)]', 'aspect-square', 'justify-center', 'items-center', 'p-0');
             return;
         }
 
-        infoMainBtn.innerText = 'Disclaimer';
+        if(infoBtnContent) infoBtnContent.innerText = 'Disclaimer';
         infoMainBtn.classList.add('px-[max(10px,2.5vmin)]');
-        infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square');
+        infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square', 'p-0');
     }
 
-    // Bind state update to resize
     window.addEventListener('resize', () => {
         updateInfoButtonState();
         adjustGridPadding();
     });
 
-
-    // --- DYNAMIC PADDING LOGIC ---
     function adjustGridPadding() {
-        // 1. Dynamic Top Padding (Applied to ALL Views now)
         const topContainer = document.getElementById('top-ui-container');
         if (topContainer) {
             const bottom = topContainer.getBoundingClientRect().bottom;
@@ -601,16 +625,15 @@
             galleryGrid.style.paddingTop = `${bottom + gap}px`;
         }
 
-        // 2. Dynamic Bottom Padding
         const bottomNav = document.getElementById('bottom-nav-container');
         const computedStyle = window.getComputedStyle(bottomNav);
-        const bottomOffset = parseFloat(computedStyle.bottom); // This is the margin from screen bottom
+        const bottomOffset = parseFloat(computedStyle.bottom); 
         const navHeight = bottomNav.offsetHeight; 
         
         let totalBottomPadding = 0;
         
         if (isProjectView && !externalLinkBtn.classList.contains('hidden')) {
-             totalBottomPadding = bottomOffset + navHeight + bottomOffset;
+             totalBottomPadding = bottomOffset + navHeight; 
         } else {
              totalBottomPadding = bottomOffset + 20; 
         }
@@ -618,50 +641,65 @@
         galleryGrid.style.paddingBottom = `calc(${totalBottomPadding}px + env(safe-area-inset-bottom))`;
     }
 
-    // --- MAIN BUTTON STATE UPDATER ---
     function updateMainButtonState() {
-        const svg = filterMainBtn.querySelector('svg');
+        const wrapper = filterMainBtn.querySelector('.glass-content-wrapper');
+        const svg = wrapper ? wrapper.querySelector('svg') : filterMainBtn.querySelector('svg');
+        
         if (lastActiveFilter) {
-            filterMainBtn.classList.remove('glass-base', 'text-gray-900', 'hover:bg-white/50');
-            filterMainBtn.classList.add('bg-black/80', 'text-white', 'hover:bg-black/90');
-            svg.innerHTML = ICONS.close;
+            filterMainBtn.classList.remove('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900', 'hover:bg-white/50');
+            filterMainBtn.classList.add('bg-black/80', 'text-white', 'hover:bg-black/90', 'rounded-full', 'overflow-hidden');
+            const glassLayers = filterMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
+            glassLayers.forEach(l => l.style.display = 'none');
+            
+            if(svg) svg.innerHTML = ICONS.close;
         } else {
-            filterMainBtn.classList.add('glass-base', 'text-gray-900', 'hover:bg-white/50');
+            filterMainBtn.classList.add('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900', 'rounded-full', 'overflow-hidden');
             filterMainBtn.classList.remove('bg-black/80', 'text-white', 'hover:bg-black/90');
+            
+            const glassLayers = filterMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
+            glassLayers.forEach(l => l.style.display = 'block');
+            
             filterMainBtn.style.backgroundColor = '';
             filterMainBtn.style.color = '';
-            svg.innerHTML = ICONS.menu;
+            if(svg) svg.innerHTML = ICONS.menu;
         }
     }
 
-    // --- FILTER LOGIC ---
     function applyFilter(key, value) {
         console.log(`Filtering by ${key}: ${value}`);
         lastActiveFilter = { key: key, value: value };
         
         const enteringProjectView = (key === 'title');
         
-        // FIX #2: Save current scroll AND count BEFORE changing view
         if (enteringProjectView) {
             mainGridScrollY = lenis.scroll;
-            storedMainGridCount = currentCount; // Save number of items rendered
+            storedMainGridCount = currentCount; 
         }
         
         isProjectView = enteringProjectView;
 
-        activeFilteredItems = galleryItems.filter(item => {
-            const itemValue = item[key];
-            if (!itemValue) return false;
-            let matches = (key === 'title') ? (itemValue === value) : String(itemValue).includes(value);
-            if (!matches) return false;
-            return isProjectView ? true : item.columnIndex <= COL_LIMIT_MAIN;
-        });
-
         if (isProjectView) {
+            activeFilteredItems = galleryItems.filter(item => {
+                const itemValue = item[key];
+                if (!itemValue) return false;
+                return itemValue === value;
+            });
             activeFilteredItems.sort((a, b) => a.columnIndex - b.columnIndex);
+        } else {
+            activeFilteredItems = galleryItems.filter(item => {
+                const itemValue = item[key];
+                if (!itemValue) return false;
+                
+                if (key === 'author' || key === 'photographer' || key === 'type' || key === 'material' || key === 'category') {
+                     if (!String(itemValue).includes(value)) return false;
+                } else {
+                     const matches = (key === 'title') ? (itemValue === value) : String(itemValue).includes(value);
+                     if (!matches) return false;
+                }
+                return item.isCover; 
+            });
         }
 
-        // Set Grid Classes
         if (isProjectView) {
             galleryGrid.classList.add('one-col-grid'); 
             if (activeFilteredItems.length > 0 && activeFilteredItems[0].projectUrl && activeFilteredItems[0].projectUrl !== '#') {
@@ -683,16 +721,13 @@
             bottomNavContainer.classList.add('max-w-[60vw]');
         }
 
-        // Only scroll to top if we are truly entering project view
         if (isProjectView) {
              lenis.scrollTo(0, { immediate: true });
         }
 
-        // Update UI States
         updateMainButtonState();
         updateInfoButtonState();
 
-        // BUILD METADATA + ACTIVE TAGS
         let metadataHTML = '';
 
         if (lastActiveFilter) { 
@@ -701,10 +736,8 @@
              metadataHTML += `</div>`;
         }
 
-        // Populate Project Metadata (Only if Project View)
         if (isProjectView && activeFilteredItems.length > 0) {
             const data = activeFilteredItems[0];
-            // 1. Author(s)
             if (data.author && data.author !== 'Unknown') {
                 const authors = data.author.split(',').map(s => s.trim()).filter(s => s);
                 authors.forEach(a => { 
@@ -713,17 +746,24 @@
                     metadataHTML += `</div>`;
                 });
             }
-            // 2. Country
-            metadataHTML += `<div class="flex flex-row flex-wrap items-start">`;
-            metadataHTML += createButtonHTML(data.country, 'country', ICONS.country);
-            metadataHTML += `</div>`;
-            // 3. Year
+            if (data.country) {
+                metadataHTML += `<div class="flex flex-row flex-wrap items-start">`;
+                metadataHTML += createButtonHTML(data.country, 'country', ICONS.country);
+                metadataHTML += `</div>`;
+            }
             if(data.year) {
                 metadataHTML += `<div class="flex flex-row flex-wrap items-start">`;
                 metadataHTML += createButtonHTML(data.year, 'year', ICONS.year);
                 metadataHTML += `</div>`;
             }
-            // 4. Type
+            if (data.photographer && data.photographer !== 'Unknown') {
+                const photogs = data.photographer.split(',').map(s => s.trim()).filter(s => s);
+                photogs.forEach(p => {
+                    metadataHTML += `<div class="flex flex-row flex-wrap items-start">`;
+                    metadataHTML += createButtonHTML(p, 'photographer', ICONS.photographer);
+                    metadataHTML += `</div>`;
+                });
+            }
             if (data.type && data.type !== 'Unknown') {
                 const types = data.type.split(',').map(s => s.trim()).filter(s => s);
                 types.forEach(t => { 
@@ -732,7 +772,6 @@
                     metadataHTML += `</div>`;
                 });
             }
-            // 5. Material
             if (data.material && data.material !== 'Unknown') {
                 const mats = data.material.split(',').map(s => s.trim()).filter(s => s);
                 mats.forEach(m => { 
@@ -741,7 +780,6 @@
                     metadataHTML += `</div>`;
                 });
             }
-            // 6. Topic
             if (data.category && data.category !== 'Unknown') {
                 const cats = data.category.split(',').map(s => s.trim()).filter(s => s);
                 cats.forEach(c => { 
@@ -793,8 +831,7 @@
         projectMetadata.classList.remove('flex');
         projectMetadata.innerHTML = '';
 
-        // Standard clear: reset active list to full main grid items
-        activeFilteredItems = galleryItems.filter(item => item.columnIndex <= COL_LIMIT_MAIN); 
+        activeFilteredItems = galleryItems.filter(item => item.isCover); 
         
         galleryGrid.innerHTML = '';
         currentCount = 0;
@@ -808,29 +845,23 @@
         filterWrapper.style.display = 'flex'; 
         projectSearchWrapper.style.display = 'block'; 
         document.getElementById('error-container').classList.add('hidden');
-        setTimeout(adjustGridPadding, 10);
+        
+        setTimeout(adjustGridPadding, 50);
 
-        // FIX #3: Restore scroll logic
         if (wasProjectView) {
-            // Logic to restore exact DOM state
             const restoreCount = Math.min(storedMainGridCount, activeFilteredItems.length);
-            
-            // Loop to rebuild DOM up to previous count synchronously
             for (let i = 0; i < restoreCount; i++) {
                 let itemElement = createGridItem(activeFilteredItems[i], i);
                 galleryGrid.appendChild(itemElement);
                 itemObserver.observe(itemElement);
             }
-            // Update counter so infinite scroll continues correctly
             currentCount = restoreCount;
             
-            // Wait for DOM paint then jump
             setTimeout(() => {
-                lenis.resize(); // Inform Lenis of new height
+                lenis.resize(); 
                 lenis.scrollTo(mainGridScrollY, { immediate: true });
-            }, 50); // slight delay to ensure layout is done
+            }, 60); 
         } else {
-            // Standard reset
             loadNextBatch();
             lenis.scrollTo(0, { immediate: true });
         }
@@ -844,7 +875,12 @@
         if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
         if (isFilterOpen) return;
         isFilterOpen = true;
-        filterMainBtn.classList.remove('bg-white/30', 'text-gray-900', 'hover:bg-white/50');
+        
+        filterMainBtn.classList.remove('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900', 'hover:bg-white/50');
+        const glassLayers = filterMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
+        glassLayers.forEach(l => l.style.display = 'none');
+
+        filterMainBtn.classList.add('rounded-full', 'overflow-hidden');
         filterMainBtn.style.backgroundColor = 'rgba(0,0,0,0.7)';
         filterMainBtn.style.color = 'white';
         filterOptionsContainer.classList.add('show-menu');
@@ -863,9 +899,13 @@
             if (!lastActiveFilter) {
                 filterMainBtn.style.backgroundColor = '';
                 filterMainBtn.style.color = '';
+                
+                filterMainBtn.classList.add('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900');
+                const glassLayers = filterMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
+                glassLayers.forEach(l => l.style.display = 'block');
             } else {
                  filterMainBtn.style.backgroundColor = ''; 
-                 filterMainBtn.classList.add('bg-black/80', 'text-white');
+                 filterMainBtn.classList.add('bg-black/80', 'text-white', 'rounded-full');
             }
 
             filterOptionsContainer.classList.remove('show-menu');
@@ -894,8 +934,13 @@
         if (infoCloseTimeout) { clearTimeout(infoCloseTimeout); infoCloseTimeout = null; }
         if (isInfoOpen) return;
         isInfoOpen = true;
+        
+        infoMainBtn.classList.remove('aesthetic-glass', 'aesthetic-glass-hover');
+        const glassLayers = infoMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
+        glassLayers.forEach(l => l.style.display = 'none');
+
         infoMainBtn.classList.remove('bg-white/30', 'text-gray-900', 'hover:bg-white/50');
-        infoMainBtn.classList.add('bg-black/70', 'text-white', 'hover:bg-black/80');
+        infoMainBtn.classList.add('bg-black/70', 'text-white', 'hover:bg-black/80', 'rounded-full', 'overflow-hidden');
         infoOptionsContainer.classList.add('show-menu');
     }
 
@@ -904,7 +949,10 @@
             if (!isInfoOpen) return;
             isInfoOpen = false;
             infoMainBtn.classList.remove('bg-black/70', 'text-white', 'hover:bg-black/80');
-            infoMainBtn.classList.add('bg-white/30', 'text-gray-900', 'hover:bg-white/50');
+            
+            infoMainBtn.classList.add('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900', 'rounded-full');
+            const glassLayers = infoMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
+            glassLayers.forEach(l => l.style.display = 'block');
             infoOptionsContainer.classList.remove('show-menu');
         };
         if (infoCloseTimeout) { clearTimeout(infoCloseTimeout); infoCloseTimeout = null; }
@@ -973,17 +1021,29 @@
             const key = filterObj.key; 
 
             const wrapper = document.createElement('div');
-            wrapper.className = `glass-base glass-fast group relative rounded-full shadow-sm hover:bg-white/50 cursor-pointer`; 
+            wrapper.className = `group relative cursor-pointer mb-[0.5vmin]`; 
 
-            const btn = document.createElement('button');
+            const glassBtn = document.createElement('div');
+            glassBtn.className = `aesthetic-glass aesthetic-glass-hover rounded-full shadow-sm hover:bg-white/50 px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max transition-colors`;
+            
             const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] text-gray-900";
             const iconSVG = ICONS[key] || '';
             
-            btn.className = `flex items-center gap-2 text-gray-900 font-medium text-[max(14px,1.7vmin)] pl-[max(6px,1.5vmin)] pr-[max(6px,1.5vmin)] py-[max(4px,0.8vmin)] cursor-pointer outline-none whitespace-nowrap block w-full text-left rounded-full bg-transparent`;
-            btn.innerHTML = `<div class="${iconClass}">${iconSVG}</div> ${label}`;
+            const refraction = document.createElement('div'); refraction.className = 'refraction-layer';
+            const specular = document.createElement('div'); specular.className = 'specular-layer';
+            
+            const content = document.createElement('div');
+            content.className = 'glass-content-wrapper flex items-center gap-2 text-gray-900 font-medium text-[max(14px,1.7vmin)] pl-[max(6px,1.5vmin)] pr-[max(6px,1.5vmin)] py-[max(4px,0.8vmin)] cursor-pointer outline-none whitespace-nowrap block w-full text-left bg-transparent';
+            content.innerHTML = `<div class="${iconClass}">${iconSVG}</div> ${label}`;
+
+            glassBtn.appendChild(refraction);
+            glassBtn.appendChild(specular);
+            glassBtn.appendChild(content);
+
+            glassBtn.onclick = () => {}; 
             
             const dropdownOuter = document.createElement('div');
-            dropdownOuter.className = `dropdown-content absolute left-full top-0 -ml-[40px] pl-[calc(40px+1vmin)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 origin-left z-50`;
+            dropdownOuter.className = `dropdown-content absolute left-full top-0 -ml-[10px] pl-[calc(10px+1vmin)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 origin-left z-50`;
 
             const dropdownInner = document.createElement('div');
             dropdownInner.className = `min-w-[180px] max-h-[40vh] overflow-y-auto custom-scrollbar bg-white/90 backdrop-blur-md rounded-[1vmin] shadow-xl flex flex-col`;
@@ -1026,8 +1086,10 @@
             }
 
             dropdownOuter.appendChild(dropdownInner);
-            wrapper.appendChild(btn);
+            
+            wrapper.appendChild(glassBtn);
             wrapper.appendChild(dropdownOuter);
+            
             filterOptionsContainer.appendChild(wrapper);
             subButtonWrappers.push(wrapper);
         });
@@ -1036,14 +1098,23 @@
     // --- DATA PARSING & GRID ---
     function parseCSV(text) {
         const lines = text.split(/\r?\n/);
-        const items = [];
+        const allItems = [];
         const [COL_TITLE, COL_URL, COL_AUTHOR, COL_YEAR, COL_COUNTRY, COL_MATERIAL, COL_TYPE, COL_CATEGORY] = [0,1,2,3,4,5,6,7];
         const START_IMG_COL = 9; 
-        const END_IMG_COL = 26;  
+        const COVER_RANGE_END = 18; // Column S
+        const FULL_RANGE_END = 26;  // Column AA
+        const COL_PHOTOGRAPHER = 27; // Column AB
+        // FIX #1: Column AD check
+        const COL_VISIBLE = 29; // Column AD
 
         lines.forEach(line => {
             if (!line.trim()) return;
             const cols = splitCSVLine(line);
+            
+            // FIX #1: Check visibility boolean
+            const isVisible = cols[COL_VISIBLE] ? cols[COL_VISIBLE].trim().toUpperCase() !== 'FALSE' : true;
+            if (!isVisible) return; // Skip this row if FALSE
+
             const title = cols[COL_TITLE] ? cols[COL_TITLE].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Untitled';
             const projectUrl = cols[COL_URL] ? cols[COL_URL].replace(/^"|"$/g, '').trim() : '#';
             const author = cols[COL_AUTHOR] ? cols[COL_AUTHOR].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
@@ -1052,28 +1123,54 @@
             const material = cols[COL_MATERIAL] ? cols[COL_MATERIAL].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
             const type = cols[COL_TYPE] ? cols[COL_TYPE].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
             const category = cols[COL_CATEGORY] ? cols[COL_CATEGORY].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
+            const photographer = cols[COL_PHOTOGRAPHER] ? cols[COL_PHOTOGRAPHER].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
 
-            for (let i = START_IMG_COL; i <= END_IMG_COL; i++) {
+            const projectImages = [];
+            const coverCandidates = [];
+
+            for (let i = START_IMG_COL; i <= FULL_RANGE_END; i++) {
                 if (cols[i]) {
                     const cellContent = cols[i].trim();
                     if (cellContent.includes('https://') || cellContent.includes('http://')) {
-                        items.push({
+                        const imgObj = {
                             url: cellContent.replace(/^"|"$/g, '').trim(),
-                            title, projectUrl, author, year, country, material, type, category, columnIndex: i 
-                        });
+                            colIndex: i 
+                        };
+                        projectImages.push(imgObj);
+                        if (i <= COVER_RANGE_END) {
+                            coverCandidates.push(imgObj);
+                        }
                     }
                 }
             }
+
+            let coverUrl = null;
+            if (coverCandidates.length > 0) {
+                const randomIndex = Math.floor(Math.random() * coverCandidates.length);
+                coverUrl = coverCandidates[randomIndex].url;
+            } else if (projectImages.length > 0) {
+                coverUrl = projectImages[0].url; 
+            }
+
+            projectImages.forEach(imgObj => {
+                allItems.push({
+                    url: imgObj.url,
+                    title, projectUrl, author, year, country, material, type, category, photographer,
+                    columnIndex: imgObj.colIndex,
+                    isCover: (imgObj.url === coverUrl) 
+                });
+            });
         });
-        return items;
+        return allItems;
     }
 
     function createGridItem(itemData, index) {
         const anchor = document.createElement('div');
         anchor.className = isProjectView ? 'w-full h-auto relative mb-[4vmin]' : 'aspect-square relative';
         
+        // FIX #2: Removed bg-gray-200
         const content = document.createElement('div');
-        content.className = `w-full h-full group overflow-hidden bg-gray-200 shadow-sm scroll-item cursor-pointer`;
+        content.className = `w-full h-full group overflow-hidden shadow-sm scroll-item cursor-pointer`;
         if (isProjectView) {
             content.style.pointerEvents = 'none';
         }
@@ -1084,19 +1181,42 @@
         img.src = itemData.url;
         img.className = isProjectView 
             ? `w-full h-auto block opacity-0 transition-all duration-700 pointer-events-none select-none`
-            : `w-full h-full object-cover block transform transition-transform duration-[1050ms] group-hover:scale-110 pointer-events-none select-none`;
+            : `w-full h-full object-cover block transform transition-transform duration-[1050ms] group-hover:scale-110 pointer-events-none select-none opacity-0`; // Ensure start opacity 0
         img.loading = 'lazy';
         img.alt = itemData.title;
         img.draggable = false;
-        img.onload = () => img.classList.remove('opacity-0');
+        
+        // FIX #2: Animation trigger on load
+        img.onload = () => {
+            img.classList.remove('opacity-0'); 
+            content.classList.add('loaded'); // Add loaded class to container
+        };
         img.onerror = () => anchor.remove(); 
 
         if (!isProjectView) {
-            const textBaseClass = `absolute z-10 text-gray-900 text-[1.5vmin] font-bold opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none bg-white/30 backdrop-blur-md px-[1vmin] py-[0.5vmin]`;
-            const titleEl = document.createElement('div'); titleEl.className = `${textBaseClass} bottom-[5vmin] left-[1vmin]`; titleEl.innerText = itemData.title;
-            const authorEl = document.createElement('div'); authorEl.className = `${textBaseClass} bottom-[1vmin] left-[1vmin] font-medium`; authorEl.innerText = itemData.author;
-            const yearEl = document.createElement('div'); yearEl.className = `${textBaseClass} bottom-[1vmin] right-[1vmin] text-right font-medium`; yearEl.innerText = itemData.year;
-            content.append(titleEl, authorEl, yearEl);
+            const overlayContainer = document.createElement('div');
+            overlayContainer.className = `absolute bottom-0 left-0 w-full p-[1vmin] flex flex-col gap-1 pointer-events-none bg-white/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10`;
+
+            const titleEl = document.createElement('div');
+            titleEl.className = `text-gray-900 text-[max(12px,1.5vmin)] font-bold leading-tight`;
+            titleEl.innerText = itemData.title;
+
+            const metaRow = document.createElement('div');
+            metaRow.className = `flex flex-row justify-between items-end w-full text-gray-900 font-medium text-[max(12px,1.5vmin)] leading-none`;
+            
+            const authorEl = document.createElement('span');
+            authorEl.innerText = itemData.author;
+            
+            const yearEl = document.createElement('span');
+            yearEl.innerText = itemData.year;
+
+            metaRow.appendChild(authorEl);
+            metaRow.appendChild(yearEl);
+
+            overlayContainer.appendChild(titleEl);
+            overlayContainer.appendChild(metaRow);
+
+            content.appendChild(overlayContainer);
             
             content.onclick = () => applyFilter('title', itemData.title);
         } else {
@@ -1155,11 +1275,15 @@
             const response = await fetch(CSV_URL);
             if (!response.ok) throw new Error("Failed to connect to Google Sheets.");
             galleryItems = parseCSV(await response.text());
-            activeFilteredItems = galleryItems.filter(item => item.columnIndex <= COL_LIMIT_MAIN);
+            
+            activeFilteredItems = galleryItems.filter(item => item.isCover);
+            
             initFilterUI();
             initProjectSearch();
             shuffleArray(galleryItems);
-            activeFilteredItems = galleryItems.filter(item => item.columnIndex <= COL_LIMIT_MAIN);
+            
+            activeFilteredItems = galleryItems.filter(item => item.isCover);
+            
             if (galleryItems.length === 0) { showError("No valid URLs found."); return; }
             loadNextBatch();
             setupInfiniteScroll();
@@ -1168,12 +1292,8 @@
 
     window.addEventListener('load', () => {
         setTimeout(() => {
-            filterMainBtn.classList.add('glass-active');
-            // Changed from projectSearchInner to projectSearchWrapper due to new structure? 
-            // Actually inner logic relies on glass-active on the search bar.
-            // The new Liquid Glass wrapper is static CSS but we can fade in the wrapper.
-            const lgWrapper = document.querySelector('.aesthetic-glass');
-            if(lgWrapper) lgWrapper.classList.add('fade-in-slow'); // reusing fade-in for entrance
+            filterMainBtn.classList.add('aesthetic-glass');
+            projectSearchInput.classList.add('glass-content-wrapper');
             
             infoMainBtn.classList.add('fade-in-slow');
             setTimeout(() => infoMainBtn.classList.remove('opacity-0'), 50);
