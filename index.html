@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.44</title>
+    <title>Tessera v0.8.47</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -42,7 +42,8 @@
             gap: 1.5vmin; 
             padding-left: 0 !important;
             padding-right: 0 !important;
-            padding-bottom: calc(20vmin + env(safe-area-inset-bottom)) !important; 
+            /* Removed !important from padding-bottom so JS variable can control it */
+            padding-bottom: 20px; 
         }
 
         /* --- SCROLL ANIMATION --- */
@@ -53,7 +54,7 @@
             will-change: opacity, transform;
         }
 
-        /* FIX #2: Only animate in when BOTH visible (scroll) AND loaded (image ready) */
+        /* Only animate in when BOTH visible (scroll) AND loaded (image ready) */
         .scroll-item.is-visible.loaded {
             opacity: 1;
             transform: scale(1) translateY(0);
@@ -396,7 +397,11 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.44...");
+    console.log("Initializing Architecture Dex v0.8.47...");
+
+    // --- CONFIGURATION ---
+    // Variable to control bottom space in Project View (One Column Grid) in pixels
+    const PROJECT_VIEW_BOTTOM_PADDING = 30; 
 
     const lenis = new Lenis({
         duration: 1.5,
@@ -612,11 +617,7 @@
         infoMainBtn.classList.remove('p-[max(6px,1vmin)]', 'aspect-square', 'p-0');
     }
 
-    window.addEventListener('resize', () => {
-        updateInfoButtonState();
-        adjustGridPadding();
-    });
-
+    // --- 1. ROBUST PADDING FIX: ResizeObserver ---
     function adjustGridPadding() {
         const topContainer = document.getElementById('top-ui-container');
         if (topContainer) {
@@ -633,13 +634,31 @@
         let totalBottomPadding = 0;
         
         if (isProjectView && !externalLinkBtn.classList.contains('hidden')) {
-             totalBottomPadding = bottomOffset + navHeight; 
+             // USE VARIABLE HERE
+             totalBottomPadding = PROJECT_VIEW_BOTTOM_PADDING; 
         } else {
              totalBottomPadding = bottomOffset + 20; 
         }
 
         galleryGrid.style.paddingBottom = `calc(${totalBottomPadding}px + env(safe-area-inset-bottom))`;
     }
+
+    // Initialize ResizeObserver for robust layout updates
+    if (topUIContainer) {
+        const resizeObserver = new ResizeObserver(() => {
+            // Fix: Wrap in rAF to avoid loop error
+            window.requestAnimationFrame(() => {
+                adjustGridPadding();
+            });
+        });
+        resizeObserver.observe(topUIContainer);
+    }
+    
+    // Fallback resize listener
+    window.addEventListener('resize', () => {
+        updateInfoButtonState();
+        adjustGridPadding();
+    });
 
     function updateMainButtonState() {
         const wrapper = filterMainBtn.querySelector('.glass-content-wrapper');
@@ -800,6 +819,7 @@
             projectMetadata.classList.remove('flex');
         }
 
+        // Trigger resize calculation
         setTimeout(adjustGridPadding, 50);
 
         galleryGrid.innerHTML = '';
@@ -821,30 +841,37 @@
     function clearFilter() {
         const wasProjectView = isProjectView;
         
+        // 1. Reset State
         isProjectView = false;
-        lastActiveFilter = null; 
+        isLoading = false; // Force unlock in case it was stuck
+        
+        // 2. Reset Data and Grid IMMEDIATELY
+        activeFilteredItems = galleryItems.filter(item => item.isCover); 
+        currentCount = 0;
+        galleryGrid.innerHTML = ''; // Force clear
         
         galleryGrid.classList.remove('one-col-grid'); 
-        galleryGrid.style.paddingTop = '';
-
-        projectMetadata.classList.add('hidden');
-        projectMetadata.classList.remove('flex');
-        projectMetadata.innerHTML = '';
-
-        activeFilteredItems = galleryItems.filter(item => item.isCover); 
         
-        galleryGrid.innerHTML = '';
-        currentCount = 0;
+        // 3. Update UI Safely (Wrap in try-catch to prevent flow blocking)
+        try {
+            lastActiveFilter = null;
+            updateMainButtonState();
 
-        updateMainButtonState();
-        externalLinkBtn.classList.add('hidden');
-        externalLinkBtn.classList.remove('fade-in-fast');
-        updateInfoButtonState();
-        bottomNavContainer.classList.remove('max-w-[70vw]');
-        bottomNavContainer.classList.add('max-w-[60vw]');
-        filterWrapper.style.display = 'flex'; 
-        projectSearchWrapper.style.display = 'block'; 
-        document.getElementById('error-container').classList.add('hidden');
+            projectMetadata.classList.add('hidden');
+            projectMetadata.classList.remove('flex');
+            projectMetadata.innerHTML = '';
+
+            externalLinkBtn.classList.add('hidden');
+            externalLinkBtn.classList.remove('fade-in-fast');
+            updateInfoButtonState();
+            bottomNavContainer.classList.remove('max-w-[70vw]');
+            bottomNavContainer.classList.add('max-w-[60vw]');
+            filterWrapper.style.display = 'flex'; 
+            projectSearchWrapper.style.display = 'block'; 
+            document.getElementById('error-container').classList.add('hidden');
+        } catch (e) {
+            console.error("Error updating UI during clearFilter", e);
+        }
         
         setTimeout(adjustGridPadding, 50);
 
@@ -1104,16 +1131,15 @@
         const COVER_RANGE_END = 18; // Column S
         const FULL_RANGE_END = 26;  // Column AA
         const COL_PHOTOGRAPHER = 27; // Column AB
-        // FIX #1: Column AD check
         const COL_VISIBLE = 29; // Column AD
 
         lines.forEach(line => {
             if (!line.trim()) return;
             const cols = splitCSVLine(line);
             
-            // FIX #1: Check visibility boolean
+            // Check visibility boolean
             const isVisible = cols[COL_VISIBLE] ? cols[COL_VISIBLE].trim().toUpperCase() !== 'FALSE' : true;
-            if (!isVisible) return; // Skip this row if FALSE
+            if (!isVisible) return; 
 
             const title = cols[COL_TITLE] ? cols[COL_TITLE].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Untitled';
             const projectUrl = cols[COL_URL] ? cols[COL_URL].replace(/^"|"$/g, '').trim() : '#';
@@ -1126,8 +1152,7 @@
             const photographer = cols[COL_PHOTOGRAPHER] ? cols[COL_PHOTOGRAPHER].replace(/^"|"$/g, '').replace(/""/g, '"').trim() : 'Unknown';
 
             const projectImages = [];
-            const coverCandidates = [];
-
+            
             for (let i = START_IMG_COL; i <= FULL_RANGE_END; i++) {
                 if (cols[i]) {
                     const cellContent = cols[i].trim();
@@ -1137,18 +1162,13 @@
                             colIndex: i 
                         };
                         projectImages.push(imgObj);
-                        if (i <= COVER_RANGE_END) {
-                            coverCandidates.push(imgObj);
-                        }
                     }
                 }
             }
 
             let coverUrl = null;
-            if (coverCandidates.length > 0) {
-                const randomIndex = Math.floor(Math.random() * coverCandidates.length);
-                coverUrl = coverCandidates[randomIndex].url;
-            } else if (projectImages.length > 0) {
+            // Always pick the first image (Column J/Index 0)
+            if (projectImages.length > 0) {
                 coverUrl = projectImages[0].url; 
             }
 
@@ -1168,7 +1188,6 @@
         const anchor = document.createElement('div');
         anchor.className = isProjectView ? 'w-full h-auto relative mb-[4vmin]' : 'aspect-square relative';
         
-        // FIX #2: Removed bg-gray-200
         const content = document.createElement('div');
         content.className = `w-full h-full group overflow-hidden shadow-sm scroll-item cursor-pointer`;
         if (isProjectView) {
@@ -1181,21 +1200,21 @@
         img.src = itemData.url;
         img.className = isProjectView 
             ? `w-full h-auto block opacity-0 transition-all duration-700 pointer-events-none select-none`
-            : `w-full h-full object-cover block transform transition-transform duration-[1050ms] group-hover:scale-110 pointer-events-none select-none opacity-0`; // Ensure start opacity 0
+            : `w-full h-full object-cover block transform transition-transform duration-[1050ms] group-hover:scale-110 pointer-events-none select-none opacity-0`; 
         img.loading = 'lazy';
         img.alt = itemData.title;
         img.draggable = false;
         
-        // FIX #2: Animation trigger on load
         img.onload = () => {
             img.classList.remove('opacity-0'); 
-            content.classList.add('loaded'); // Add loaded class to container
+            content.classList.add('loaded'); 
         };
         img.onerror = () => anchor.remove(); 
 
         if (!isProjectView) {
             const overlayContainer = document.createElement('div');
-            overlayContainer.className = `absolute bottom-0 left-0 w-full p-[1vmin] flex flex-col gap-1 pointer-events-none bg-white/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10`;
+            // bottom-[-1px] to fix sub-pixel gap
+            overlayContainer.className = `absolute bottom-[-1px] left-0 w-full p-[1vmin] flex flex-col gap-1 pointer-events-none bg-white/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10`;
 
             const titleEl = document.createElement('div');
             titleEl.className = `text-gray-900 text-[max(12px,1.5vmin)] font-bold leading-tight`;
