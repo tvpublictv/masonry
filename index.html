@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.52</title>
+    <title>Tessera v0.8.55</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -25,19 +25,23 @@
         /* --- GRID CONFIGURATION --- */
         .vmin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(45vw, 1fr));
-            gap: 1vmin; 
+            /* Portrait: Full width (spread across screen) */
             width: 100%;
+            
+            /* Portrait: 2 columns */
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1vmin; 
         }
 
         @media (orientation: landscape) {
             .vmin-grid {
-                /* Change to 3 columns */
+                /* Landscape: Constrained width centered */
+                width: min(70vw, 100vh);
+                margin-left: auto;
+                margin-right: auto;
+                
+                /* Landscape: 3 columns */
                 grid-template-columns: repeat(3, 1fr);
-                /* Add padding to maintain original image size (approx 25vw per image) */
-                /* 100vw - (3 * 25vw) = 25vw remaining space. Split by 2 = 12.5vw side padding */
-                padding-left: 12.5vw;
-                padding-right: 12.5vw;
             }
         }
 
@@ -252,7 +256,7 @@
             transform: scaleX(0.95);
             overflow: hidden;
             padding: 0 !important;
-            /* FIX 1: Negative margin to consume the flex gap (0.75vmin) */
+            /* Negative margin to consume the flex gap (0.75vmin) */
             margin-right: -0.75vmin !important; 
         }
         
@@ -291,7 +295,7 @@
         <div class="w-full landscape:w-[50vw] flex flex-col gap-[1.2vmin]">
             
             <!-- ROW 1: MAIN CONTROLS (Filter + Strip + Search) -->
-            <!-- FIX 1: Updated gap to 0.75vmin -->
+            <!-- Updated gap to 0.75vmin -->
             <div class="w-full flex flex-row items-center gap-[0.75vmin] pointer-events-auto justify-between h-[max(32px,4.5vmin)] portrait:h-[max(36px,5vmin)]">
                 
                 <!-- 1. FILTER BUTTON -->
@@ -489,7 +493,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.52...");
+    console.log("Initializing Architecture Dex v0.8.54...");
 
     // --- CONFIGURATION ---
     const PROJECT_VIEW_BOTTOM_PADDING = 30; 
@@ -1250,7 +1254,7 @@
         const START_IMG_COL = 9; 
         const COVER_RANGE_END = 18; 
         const FULL_RANGE_END = 26;  
-        const COL_PHOTOGRAPHER =8; 
+        const COL_PHOTOGRAPHER = 8; 
         const COL_VISIBLE = 29; 
 
         lines.forEach(line => {
