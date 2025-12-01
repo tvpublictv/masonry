@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.51</title>
+    <title>Tessera v0.8.52</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -32,7 +32,12 @@
 
         @media (orientation: landscape) {
             .vmin-grid {
-                grid-template-columns: repeat(4, 1fr);
+                /* Change to 3 columns */
+                grid-template-columns: repeat(3, 1fr);
+                /* Add padding to maintain original image size (approx 25vw per image) */
+                /* 100vw - (3 * 25vw) = 25vw remaining space. Split by 2 = 12.5vw side padding */
+                padding-left: 12.5vw;
+                padding-right: 12.5vw;
             }
         }
 
@@ -484,7 +489,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.51...");
+    console.log("Initializing Architecture Dex v0.8.52...");
 
     // --- CONFIGURATION ---
     const PROJECT_VIEW_BOTTOM_PADDING = 30; 
