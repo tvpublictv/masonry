@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.47</title>
+    <title>Tessera v0.8.51</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -42,8 +42,7 @@
             gap: 1.5vmin; 
             padding-left: 0 !important;
             padding-right: 0 !important;
-            /* Removed !important from padding-bottom so JS variable can control it */
-            padding-bottom: 20px; 
+            padding-bottom: 20px; /* Controlled by JS variable */
         }
 
         /* --- SCROLL ANIMATION --- */
@@ -61,14 +60,14 @@
         }
         
         /* --- FILTER CONTAINER ANIMATION --- */
-        #filter-options, #info-options {
+        #info-options {
             opacity: 0;
             pointer-events: none; 
             transform: translateY(-10px);
             transition: opacity 0.3s ease-out, transform 0.3s ease-out;
         }
 
-        #filter-options.show-menu, #info-options.show-menu {
+        #info-options.show-menu {
             opacity: 1;
             pointer-events: auto;
             transform: translateY(0);
@@ -188,6 +187,78 @@
             -webkit-user-select: none;
         }
 
+        /* --- NEW: TOP BAR TRANSITIONS --- */
+        #project-search-wrapper {
+            transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1), width 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+            will-change: flex-grow, width;
+            overflow: hidden; /* Hide input when shrinking */
+            min-width: 0; /* Allow shrinking below content size */
+        }
+        
+        /* Fixed Aspect Ratio for Icon Box to prevent squishing */
+        .search-icon-box {
+            width: max(32px, 4.5vmin); /* Match button height */
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        /* Animate Input Disappearance */
+        #project-search-input {
+            transition: width 0.4s ease, opacity 0.3s ease, padding 0.3s ease;
+            width: 100%;
+            opacity: 1;
+        }
+
+        /* COLLAPSED STATE CLASSES */
+        .search-collapsed #project-search-input {
+            width: 0 !important;
+            opacity: 0 !important;
+            padding: 0 !important;
+            pointer-events: none;
+        }
+        
+        /* Ensure icon stays centered when collapsed */
+        .search-collapsed .glass-content-wrapper {
+            justify-content: center !important;
+            padding: 0 !important;
+        }
+        
+        .search-collapsed {
+            flex-grow: 0 !important;
+            width: max(32px, 4.5vmin) !important; /* Circle width */
+        }
+
+        /* FILTER STRIP ANIMATION */
+        #filter-options-strip {
+            transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.4s ease, transform 0.4s ease, margin 0.5s ease;
+            transform-origin: left center;
+            min-width: 0; /* Allow shrinking if needed */
+        }
+        
+        .strip-hidden {
+            flex-grow: 0; /* Zero growth */
+            flex-basis: 0; /* Zero basis */
+            width: 0; /* Explicit zero width */
+            opacity: 0;
+            pointer-events: none;
+            transform: scaleX(0.95);
+            overflow: hidden;
+            padding: 0 !important;
+            /* FIX 1: Negative margin to consume the flex gap (0.75vmin) */
+            margin-right: -0.75vmin !important; 
+        }
+        
+        .strip-visible {
+            flex-grow: 1;
+            opacity: 1;
+            pointer-events: auto;
+            transform: scaleX(1);
+            margin-right: 0 !important;
+        }
+
         /* --- RESPONSIVE BUTTON TEXT --- */
         @media (orientation: portrait) {
             .portrait-lg {
@@ -195,6 +266,13 @@
             }
             .portrait-text-lg {
                 font-size: max(14px, 1.8vmin) !important;
+            }
+            /* Adjust search icon box for portrait */
+            .search-icon-box {
+                 width: max(36px, 5vmin) !important;
+            }
+            .search-collapsed {
+                width: max(36px, 5vmin) !important;
             }
         }
     </style>
@@ -207,23 +285,20 @@
         <!-- WRAPPER -->
         <div class="w-full landscape:w-[50vw] flex flex-col gap-[1.2vmin]">
             
-            <!-- ROW 1: MAIN CONTROLS (Filter + Search) -->
-            <div class="w-full flex flex-row items-center gap-[1vmin] pointer-events-auto justify-between">
+            <!-- ROW 1: MAIN CONTROLS (Filter + Strip + Search) -->
+            <!-- FIX 1: Updated gap to 0.75vmin -->
+            <div class="w-full flex flex-row items-center gap-[0.75vmin] pointer-events-auto justify-between h-[max(32px,4.5vmin)] portrait:h-[max(36px,5vmin)]">
                 
-                <!-- 1. PROJECTS (FILTERS) MENU -->
-                <div id="filter-wrapper" class="flex flex-col gap-[1vmin] items-start transition-opacity duration-300 relative z-50 flex-none">
-                    <!-- Main Button -->
+                <!-- 1. FILTER BUTTON -->
+                <div id="filter-wrapper" class="relative z-50 flex-none h-full">
                     <button id="filter-main-btn" class="
                         aesthetic-glass aesthetic-glass-hover
-                        portrait-lg
-                        relative z-20 
+                        h-full
                         text-gray-900 
-                        h-[max(32px,4.5vmin)] px-0
                         rounded-full overflow-hidden
                         cursor-default outline-none
                         flex items-center justify-center
                         aspect-square
-                        portrait:aspect-square portrait:px-0
                         transition-all duration-300
                     ">
                         <!-- Visual Layers -->
@@ -237,46 +312,58 @@
                             </svg>
                         </div>
                     </button>
-
-                    <!-- Sub-Buttons -->
-                    <div id="filter-options" class="flex flex-col items-start gap-[1vmin] absolute top-full left-0 mt-[1vmin]">
-                        <!-- JS Injected -->
-                    </div>
                 </div>
 
-                <!-- 2. PROJECT SEARCH -->
-                <div id="project-search-wrapper" class="relative z-40 group flex-1">
+                <!-- 2. FILTER STRIP (Horizontal Sub-Buttons) -->
+                <!-- Initially hidden, expands to take space -->
+                <div id="filter-options-strip" class="
+                    strip-hidden
+                    h-full
+                    grid grid-cols-7 gap-[0.5vmin]
+                    items-center
+                ">
+                    <!-- JS Injected Buttons -->
+                </div>
+
+                <!-- 3. PROJECT SEARCH -->
+                <div id="project-search-wrapper" class="
+                    relative z-40 group flex-1 h-full
+                    aesthetic-glass aesthetic-glass-hover rounded-full
+                    cursor-text overflow-hidden
+                " onclick="document.getElementById('project-search-input').focus()">
                      
-                     <!-- Aesthetic Glass Container -->
-                     <div class="aesthetic-glass aesthetic-glass-hover w-full h-[max(32px,4.5vmin)] portrait-lg cursor-text rounded-full"
-                          onclick="document.getElementById('project-search-input').focus()">
+                    <!-- Visual Layers -->
+                    <div class="refraction-layer"></div>
+                    <div class="specular-layer"></div>
+                    
+                    <!-- Content -->
+                    <div class="glass-content-wrapper w-full h-full flex flex-row items-center pl-[max(8px,1.5vmin)] portrait:pl-[max(14px,3.5vmin)]">
                         
-                        <!-- Visual Layers -->
-                        <div class="refraction-layer"></div>
-                        <div class="specular-layer"></div>
-                        
-                        <!-- Content -->
-                        <div class="glass-content-wrapper pl-[max(8px,1.5vmin)] portrait:pl-[max(14px,3.5vmin)] pr-[max(12px,3vmin)] gap-[1vmin]">
+                        <!-- Fixed Icon Container -->
+                        <div class="search-icon-box">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-[max(16px,2vmin)] h-[max(16px,2vmin)] portrait-text-lg text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <!-- Input -->
-                            <input type="text" id="project-search-input" placeholder="Search" class="
-                                bg-transparent border-none outline-none 
-                                text-black font-medium text-[max(16px,2vmin)] portrait-text-lg
-                                w-full min-w-[100px] 
-                                placeholder-gray-900 placeholder:font-light
-                                select-text
-                            ">
                         </div>
-                     </div>
+
+                        <!-- Input -->
+                        <input type="text" id="project-search-input" placeholder="Search" class="
+                            bg-transparent border-none outline-none 
+                            text-black font-medium text-[max(16px,2vmin)] portrait-text-lg
+                            h-full
+                            placeholder-gray-900 placeholder:font-light
+                            select-text
+                            pr-[max(12px,3vmin)]
+                        ">
+                    </div>
                      
+                    <!-- Dropdown -->
                      <div id="project-search-dropdown" class="
-                        absolute left-0 top-full mt-[1vmin] 
+                        absolute right-0 top-full mt-[1vmin] 
                         min-w-[250px] max-h-[40vh] overflow-y-auto custom-scrollbar
                         bg-white/90 backdrop-blur-md rounded-[1vmin] 
                         hidden
-                        transition-all duration-200 origin-top-left
+                        transition-all duration-200 origin-top-right
                         shadow-xl z-50
                       ">
                      </div>
@@ -397,10 +484,9 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.47...");
+    console.log("Initializing Architecture Dex v0.8.51...");
 
     // --- CONFIGURATION ---
-    // Variable to control bottom space in Project View (One Column Grid) in pixels
     const PROJECT_VIEW_BOTTOM_PADDING = 30; 
 
     const lenis = new Lenis({
@@ -422,8 +508,7 @@
 
     const CSV_URL = `https://docs.google.com/spreadsheets/d/1UYf9MzEORDG36Lls7dhqCOOtXscJh2_UBQ4IfTPooNM/export?format=csv&gid=0`;
     const BATCH_SIZE = 18; 
-    const COL_LIMIT_MAIN = 18; 
-
+    
     let galleryItems = []; 
     let activeFilteredItems = []; 
     let currentCount = 0;
@@ -437,7 +522,6 @@
 
     let lastActiveFilter = null; 
     
-    // Scroll state management variables
     let mainGridScrollY = 0;
     let storedMainGridCount = 0;
 
@@ -461,21 +545,22 @@
 
     const galleryGrid = document.getElementById('gallery-grid');
     const scrollTrigger = document.getElementById('scroll-trigger');
+    
+    // Main Controls
     const filterMainBtn = document.getElementById('filter-main-btn');
-    const filterOptionsContainer = document.getElementById('filter-options');
     const filterWrapper = document.getElementById('filter-wrapper');
+    const filterOptionsStrip = document.getElementById('filter-options-strip');
+    const projectSearchWrapper = document.getElementById('project-search-wrapper');
+    const projectSearchInput = document.getElementById('project-search-input');
+    const projectSearchDropdown = document.getElementById('project-search-dropdown');
     
     const infoWrapper = document.getElementById('info-wrapper');
     const infoMainBtn = document.getElementById('info-main-btn');
     const infoOptionsContainer = document.getElementById('info-options');
 
-    // active-filter-btn removed from HTML, will be dynamic
     const externalLinkBtn = document.getElementById('external-link-btn');
     const projectMetadata = document.getElementById('project-metadata'); 
     
-    const projectSearchWrapper = document.getElementById('project-search-wrapper');
-    const projectSearchInput = document.getElementById('project-search-input');
-    const projectSearchDropdown = document.getElementById('project-search-dropdown');
     const bottomNavContainer = document.getElementById('bottom-nav-container');
     const topUIContainer = document.getElementById('top-ui-container');
 
@@ -547,6 +632,7 @@
         }
     }
 
+    // Buttons in Project View
     function createButtonHTML(text, filterKey, iconSVG, isBold = false) {
         const safeText = text.replace(/'/g, "\\'");
         
@@ -634,7 +720,6 @@
         let totalBottomPadding = 0;
         
         if (isProjectView && !externalLinkBtn.classList.contains('hidden')) {
-             // USE VARIABLE HERE
              totalBottomPadding = PROJECT_VIEW_BOTTOM_PADDING; 
         } else {
              totalBottomPadding = bottomOffset + 20; 
@@ -646,7 +731,6 @@
     // Initialize ResizeObserver for robust layout updates
     if (topUIContainer) {
         const resizeObserver = new ResizeObserver(() => {
-            // Fix: Wrap in rAF to avoid loop error
             window.requestAnimationFrame(() => {
                 adjustGridPadding();
             });
@@ -819,7 +903,6 @@
             projectMetadata.classList.remove('flex');
         }
 
-        // Trigger resize calculation
         setTimeout(adjustGridPadding, 50);
 
         galleryGrid.innerHTML = '';
@@ -827,7 +910,8 @@
         
         closeFilterMenu(true); 
         
-        filterWrapper.style.display = 'flex'; 
+        // Show default elements
+        filterWrapper.style.display = 'block'; 
         projectSearchWrapper.style.display = 'block'; 
 
         if (activeFilteredItems.length === 0) {
@@ -838,21 +922,21 @@
         }
     }
 
+    // FIX 3: Robust Clear Filter
     function clearFilter() {
-        const wasProjectView = isProjectView;
-        
-        // 1. Reset State
+        // 1. Force Reset Data & State FIRST
         isProjectView = false;
-        isLoading = false; // Force unlock in case it was stuck
-        
-        // 2. Reset Data and Grid IMMEDIATELY
-        activeFilteredItems = galleryItems.filter(item => item.isCover); 
+        isLoading = false; 
         currentCount = 0;
-        galleryGrid.innerHTML = ''; // Force clear
         
+        // Always reset to full cover items
+        activeFilteredItems = galleryItems.filter(item => item.isCover);
+        
+        // 2. Clear Grid UI
+        galleryGrid.innerHTML = ''; 
         galleryGrid.classList.remove('one-col-grid'); 
         
-        // 3. Update UI Safely (Wrap in try-catch to prevent flow blocking)
+        // 3. Reset Filter UI
         try {
             lastActiveFilter = null;
             updateMainButtonState();
@@ -866,7 +950,8 @@
             updateInfoButtonState();
             bottomNavContainer.classList.remove('max-w-[70vw]');
             bottomNavContainer.classList.add('max-w-[60vw]');
-            filterWrapper.style.display = 'flex'; 
+            
+            filterWrapper.style.display = 'block'; 
             projectSearchWrapper.style.display = 'block'; 
             document.getElementById('error-container').classList.add('hidden');
         } catch (e) {
@@ -875,58 +960,60 @@
         
         setTimeout(adjustGridPadding, 50);
 
-        if (wasProjectView) {
-            const restoreCount = Math.min(storedMainGridCount, activeFilteredItems.length);
-            for (let i = 0; i < restoreCount; i++) {
-                let itemElement = createGridItem(activeFilteredItems[i], i);
-                galleryGrid.appendChild(itemElement);
-                itemObserver.observe(itemElement);
-            }
-            currentCount = restoreCount;
-            
-            setTimeout(() => {
-                lenis.resize(); 
-                lenis.scrollTo(mainGridScrollY, { immediate: true });
-            }, 60); 
-        } else {
-            loadNextBatch();
-            lenis.scrollTo(0, { immediate: true });
-        }
+        // 4. Reload Content
+        loadNextBatch();
+        lenis.scrollTo(0, { immediate: true });
     }
 
     // --- UI EVENTS ---
     
-    filterWrapper.addEventListener('touchstart', () => { isTouchInteraction = true; }, { passive: true });
+    // Updated Event Listeners for the new Strip Layout
+    // We treat the button + strip + search wrapper as a unified "hover zone" conceptually
     
     function openFilterMenu() {
         if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
         if (isFilterOpen) return;
         isFilterOpen = true;
         
+        // 1. Collapse Search
+        projectSearchWrapper.classList.add('search-collapsed');
+        
+        // 2. Show Strip
+        filterOptionsStrip.classList.remove('strip-hidden');
+        filterOptionsStrip.classList.add('strip-visible');
+        
+        // 3. Style Button
         filterMainBtn.classList.remove('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900', 'hover:bg-white/50');
         const glassLayers = filterMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
         glassLayers.forEach(l => l.style.display = 'none');
-
         filterMainBtn.classList.add('rounded-full', 'overflow-hidden');
         filterMainBtn.style.backgroundColor = 'rgba(0,0,0,0.7)';
         filterMainBtn.style.color = 'white';
-        filterOptionsContainer.classList.add('show-menu');
-        const subButtons = filterOptionsContainer.querySelectorAll('.glass-base');
+        
+        // Animate sub-buttons
+        const subButtons = filterOptionsStrip.querySelectorAll('.glass-base');
         subButtons.forEach((btn, idx) => { setTimeout(() => { btn.classList.add('glass-active'); }, idx * 30); });
     }
 
     function closeFilterMenu(instant = false) {
         const performClose = () => {
             const active = document.activeElement;
-            const isInputFocused = active && (active === projectSearchInput || (active.tagName === 'INPUT' && filterOptionsContainer.contains(active)));
+            const isInputFocused = active && (active === projectSearchInput || (active.tagName === 'INPUT' && filterOptionsStrip.contains(active)));
             if (isInputFocused) return;
             if (!isFilterOpen) return;
             isFilterOpen = false;
-            
+
+            // 1. Expand Search
+            projectSearchWrapper.classList.remove('search-collapsed');
+
+            // 2. Hide Strip
+            filterOptionsStrip.classList.remove('strip-visible');
+            filterOptionsStrip.classList.add('strip-hidden');
+
+            // 3. Reset Button Style
             if (!lastActiveFilter) {
                 filterMainBtn.style.backgroundColor = '';
                 filterMainBtn.style.color = '';
-                
                 filterMainBtn.classList.add('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900');
                 const glassLayers = filterMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
                 glassLayers.forEach(l => l.style.display = 'block');
@@ -934,20 +1021,22 @@
                  filterMainBtn.style.backgroundColor = ''; 
                  filterMainBtn.classList.add('bg-black/80', 'text-white', 'rounded-full');
             }
-
-            filterOptionsContainer.classList.remove('show-menu');
-            const subButtons = filterOptionsContainer.querySelectorAll('.glass-base');
-            subButtons.forEach(btn => btn.classList.remove('glass-active'));
+            
+            // Hide dropdowns
             subButtonWrappers.forEach(wrap => {
                 const dd = wrap.querySelector('.dropdown-content'); 
                 if(dd && dd.classList.contains('absolute')) { dd.classList.remove('!opacity-100', '!visible'); }
             });
         };
+        
         if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
         if (instant) performClose();
         else closeTimeout = setTimeout(performClose, 400);
     }
 
+    // Event Binding
+    
+    // Hovering over button OPENS
     filterWrapper.addEventListener('mouseenter', () => { 
         if (isTouchInteraction) return; 
         if (lastActiveFilter) return; 
@@ -955,7 +1044,26 @@
         openFilterMenu(); 
     });
     
-    filterWrapper.addEventListener('mouseleave', () => { isHovering = false; closeFilterMenu(); });
+    // Hovering over Strip KEEPS OPEN
+    filterOptionsStrip.addEventListener('mouseenter', () => {
+        if (isTouchInteraction) return;
+        if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
+        isHovering = true;
+    });
+
+    // Leaving Button CLOSES (with delay)
+    filterWrapper.addEventListener('mouseleave', () => { 
+        isHovering = false; 
+        closeFilterMenu(); 
+    });
+
+    // Leaving Strip CLOSES (with delay)
+    filterOptionsStrip.addEventListener('mouseleave', () => {
+        isHovering = false;
+        closeFilterMenu();
+    });
+    
+    filterWrapper.addEventListener('touchstart', () => { isTouchInteraction = true; }, { passive: true });
 
     function openInfoMenu() {
         if (infoCloseTimeout) { clearTimeout(infoCloseTimeout); infoCloseTimeout = null; }
@@ -1039,29 +1147,34 @@
         });
     }
 
+    // Generate Icons Only for Strip
     function initFilterUI() {
-        filterOptionsContainer.innerHTML = '';
+        filterOptionsStrip.innerHTML = '';
         subButtonWrappers.length = 0; 
 
         filterLabels.forEach((filterObj) => {
             const label = filterObj.label;
             const key = filterObj.key; 
 
+            // Wrapper for Dropdown positioning
             const wrapper = document.createElement('div');
-            wrapper.className = `group relative cursor-pointer mb-[0.5vmin]`; 
+            wrapper.className = `group relative cursor-pointer w-full h-full`; 
 
+            // The Button (Icon Only)
             const glassBtn = document.createElement('div');
-            glassBtn.className = `aesthetic-glass aesthetic-glass-hover rounded-full shadow-sm hover:bg-white/50 px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max transition-colors`;
+            // Matched aesthetics to Search Bar
+            glassBtn.className = `aesthetic-glass aesthetic-glass-hover h-full w-full rounded-full shadow-sm hover:bg-white/50 flex items-center justify-center transition-colors cursor-pointer`;
             
-            const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] text-gray-900";
+            const iconClass = "h-[max(14px,1.8vmin)] w-[max(14px,1.8vmin)] text-gray-900";
             const iconSVG = ICONS[key] || '';
             
             const refraction = document.createElement('div'); refraction.className = 'refraction-layer';
             const specular = document.createElement('div'); specular.className = 'specular-layer';
             
             const content = document.createElement('div');
-            content.className = 'glass-content-wrapper flex items-center gap-2 text-gray-900 font-medium text-[max(14px,1.7vmin)] pl-[max(6px,1.5vmin)] pr-[max(6px,1.5vmin)] py-[max(4px,0.8vmin)] cursor-pointer outline-none whitespace-nowrap block w-full text-left bg-transparent';
-            content.innerHTML = `<div class="${iconClass}">${iconSVG}</div> ${label}`;
+            // Just the icon
+            content.className = 'glass-content-wrapper flex items-center justify-center bg-transparent';
+            content.innerHTML = `<div class="${iconClass}">${iconSVG}</div>`;
 
             glassBtn.appendChild(refraction);
             glassBtn.appendChild(specular);
@@ -1069,11 +1182,13 @@
 
             glassBtn.onclick = () => {}; 
             
+            // Dropdown (Absolute to wrapper)
             const dropdownOuter = document.createElement('div');
-            dropdownOuter.className = `dropdown-content absolute left-full top-0 -ml-[10px] pl-[calc(10px+1vmin)] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 origin-left z-50`;
+            // FIX 2: Replaced mt-[1vmin] with pt-[1vmin] to bridge the hover gap
+            dropdownOuter.className = `dropdown-content absolute left-1/2 -translate-x-1/2 top-full pt-[1vmin] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-opacity duration-300 z-50`;
 
             const dropdownInner = document.createElement('div');
-            dropdownInner.className = `min-w-[180px] max-h-[40vh] overflow-y-auto custom-scrollbar bg-white/90 backdrop-blur-md rounded-[1vmin] shadow-xl flex flex-col`;
+            dropdownInner.className = `min-w-[180px] max-h-[40vh] overflow-y-auto custom-scrollbar bg-white/90 backdrop-blur-md rounded-[1vmin] shadow-xl flex flex-col text-left`;
 
             const searchInput = document.createElement('input');
             searchInput.type = 'text';
@@ -1117,7 +1232,7 @@
             wrapper.appendChild(glassBtn);
             wrapper.appendChild(dropdownOuter);
             
-            filterOptionsContainer.appendChild(wrapper);
+            filterOptionsStrip.appendChild(wrapper);
             subButtonWrappers.push(wrapper);
         });
     }
@@ -1128,16 +1243,15 @@
         const allItems = [];
         const [COL_TITLE, COL_URL, COL_AUTHOR, COL_YEAR, COL_COUNTRY, COL_MATERIAL, COL_TYPE, COL_CATEGORY] = [0,1,2,3,4,5,6,7];
         const START_IMG_COL = 9; 
-        const COVER_RANGE_END = 18; // Column S
-        const FULL_RANGE_END = 26;  // Column AA
-        const COL_PHOTOGRAPHER = 27; // Column AB
-        const COL_VISIBLE = 29; // Column AD
+        const COVER_RANGE_END = 18; 
+        const FULL_RANGE_END = 26;  
+        const COL_PHOTOGRAPHER = 27; 
+        const COL_VISIBLE = 29; 
 
         lines.forEach(line => {
             if (!line.trim()) return;
             const cols = splitCSVLine(line);
             
-            // Check visibility boolean
             const isVisible = cols[COL_VISIBLE] ? cols[COL_VISIBLE].trim().toUpperCase() !== 'FALSE' : true;
             if (!isVisible) return; 
 
@@ -1167,7 +1281,6 @@
             }
 
             let coverUrl = null;
-            // Always pick the first image (Column J/Index 0)
             if (projectImages.length > 0) {
                 coverUrl = projectImages[0].url; 
             }
@@ -1213,7 +1326,6 @@
 
         if (!isProjectView) {
             const overlayContainer = document.createElement('div');
-            // bottom-[-1px] to fix sub-pixel gap
             overlayContainer.className = `absolute bottom-[-1px] left-0 w-full p-[1vmin] flex flex-col gap-1 pointer-events-none bg-white/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10`;
 
             const titleEl = document.createElement('div');
