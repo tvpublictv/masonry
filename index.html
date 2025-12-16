@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0">
     <!-- Block search engines -->
     <meta name="robots" content="noindex, nofollow">
-    <title>Tessera v0.8.55</title>
+    <title>Tessera v0.8.59</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Import Lenis for Smooth Scrolling -->
     <script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
@@ -22,36 +22,69 @@
             background-color: #f4f4f4;
         }
 
+        /* --- RESPONSIVE LAYOUT LOGIC --- */
+        /* This formula matches Requirement #2 & #4:
+           - In Portrait: min(100%, ...) -> 100%
+           - In Wide Landscape: max(50vw, ...) -> 50vw
+           - In Transition (Square-ish Landscape): max(..., 100vh). 
+             Since 100vh > 50vw in square-ish ratios, the width will equal the screen height,
+             smoothly expanding from 50% width up to 100% width as you approach portrait mode.
+        */
+        .responsive-width {
+            width: min(100%, max(50vw, 100vh));
+            margin-left: auto;
+            margin-right: auto;
+            transition: width 0.3s ease;
+        }
+
         /* --- GRID CONFIGURATION --- */
         .vmin-grid {
             display: grid;
-            /* Portrait: Full width (spread across screen) */
-            width: 100%;
-            
-            /* Portrait: 2 columns */
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr); /* Always 2 columns */
             gap: 1vmin; 
+            
+            /* Apply Responsive Width Logic */
+            width: min(100%, max(50vw, 100vh));
+            margin-left: auto;
+            margin-right: auto;
+            transition: width 0.3s ease;
+
+            /* Portrait Padding */
+            padding-left: 1vmin;
+            padding-right: 1vmin;
         }
 
         @media (orientation: landscape) {
             .vmin-grid {
-                /* Landscape: Constrained width centered */
-                width: min(70vw, 100vh);
-                margin-left: auto;
-                margin-right: auto;
-                
-                /* Landscape: 3 columns */
-                grid-template-columns: repeat(3, 1fr);
+                /* In landscape, width is constrained by responsive-width logic, 
+                   so we remove internal padding to align edges */
+                padding-left: 0;
+                padding-right: 0;
             }
         }
 
         .one-col-grid {
-            grid-template-columns: min(70vw, 100vh) !important;
+            /* Single Column overrides */
+            grid-template-columns: 1fr !important;
             justify-content: center !important;
             gap: 1.5vmin; 
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-            padding-bottom: 20px; /* Controlled by JS variable */
+            padding-bottom: 20px; 
+            
+            /* Match Responsive Width Logic (Req #2) */
+            width: min(100%, max(50vw, 100vh)) !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            
+            /* Portrait Padding (Req #3) */
+            padding-left: 1vmin !important;
+            padding-right: 1vmin !important;
+        }
+        
+        @media (orientation: landscape) {
+            .one-col-grid {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
         }
 
         /* --- SCROLL ANIMATION --- */
@@ -291,8 +324,8 @@
     <!-- --- TOP CONTAINER --- -->
     <div id="top-ui-container" class="fixed top-[max(10px,1.5vmin)] left-0 w-full z-50 pointer-events-none px-[max(10px,1.5vmin)] flex flex-col items-center">
         
-        <!-- WRAPPER -->
-        <div class="w-full landscape:w-[50vw] flex flex-col gap-[1.2vmin]">
+        <!-- WRAPPER (Applied Responsive Width Class) -->
+        <div class="responsive-width flex flex-col gap-[1.2vmin] portrait:px-[1vmin] transition-all duration-300">
             
             <!-- ROW 1: MAIN CONTROLS (Filter + Strip + Search) -->
             <!-- Updated gap to 0.75vmin -->
@@ -493,7 +526,7 @@
     </div>
 
 <script>
-    console.log("Initializing Architecture Dex v0.8.54...");
+    console.log("Initializing Architecture Dex v0.8.59...");
 
     // --- CONFIGURATION ---
     const PROJECT_VIEW_BOTTOM_PADDING = 30; 
@@ -1307,17 +1340,21 @@
     }
 
     function createGridItem(itemData, index) {
+        // Wrapper Div (The "Anchor")
         const anchor = document.createElement('div');
-        anchor.className = isProjectView ? 'w-full h-auto relative mb-[4vmin]' : 'aspect-square relative';
+        // If Project View: standard single column layout
+        // If Grid View: flex column layout to stack image and info
+        // FIX 1: Restored bottom margin mb-[1vmin]
+        anchor.className = isProjectView 
+            ? 'w-full h-auto relative mb-[4vmin] scroll-item' 
+            : 'flex flex-col gap-[0.5vmin] relative mb-[1vmin] scroll-item'; 
+
+        if (index < BATCH_SIZE) anchor.style.transitionDelay = `${(index % 5) * 0.05}s`;
+
+        // Image Container
+        const imgContainer = document.createElement('div');
+        imgContainer.className = `w-full ${isProjectView ? 'h-auto' : 'aspect-square'} group overflow-hidden shadow-sm cursor-pointer relative bg-gray-200`;
         
-        const content = document.createElement('div');
-        content.className = `w-full h-full group overflow-hidden shadow-sm scroll-item cursor-pointer`;
-        if (isProjectView) {
-            content.style.pointerEvents = 'none';
-        }
-
-        if (index < BATCH_SIZE) content.style.transitionDelay = `${(index % 5) * 0.05}s`;
-
         const img = document.createElement('img');
         img.src = itemData.url;
         img.className = isProjectView 
@@ -1328,21 +1365,46 @@
         img.draggable = false;
         
         img.onload = () => {
-            img.classList.remove('opacity-0'); 
-            content.classList.add('loaded'); 
+            img.classList.remove('opacity-0');
+            // We use a specific class on the anchor now to trigger vis, but keeping 'loaded' logic
+            anchor.classList.add('loaded'); 
         };
-        img.onerror = () => anchor.remove(); 
+        img.onerror = () => {
+            console.warn(`Failed to load image for: ${itemData.title}`);
+            img.style.display = 'none';
+            const placeholder = document.createElement('div');
+            placeholder.className = 'w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-xs font-medium';
+            placeholder.innerText = 'No Image';
+            imgContainer.appendChild(placeholder);
+            anchor.classList.add('loaded'); 
+        };
 
+        imgContainer.appendChild(img);
+        
+        // Add click handler to image container
         if (!isProjectView) {
-            const overlayContainer = document.createElement('div');
-            overlayContainer.className = `absolute bottom-[-1px] left-0 w-full p-[1vmin] flex flex-col gap-1 pointer-events-none bg-white/30 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10`;
+            imgContainer.onclick = () => applyFilter('title', itemData.title);
+        } else {
+            imgContainer.onclick = null;
+        }
 
+        anchor.appendChild(imgContainer);
+
+        // --- ADD INFO BLOCK BELOW IMAGE (Only in Grid View) ---
+        if (!isProjectView) {
+            const infoBlock = document.createElement('div');
+            // Simple text block, no hover effects needed as it's static
+            infoBlock.className = `flex flex-col gap-0.5 mt-[0.5vmin] cursor-pointer`; 
+            
+            // Title
             const titleEl = document.createElement('div');
-            titleEl.className = `text-gray-900 text-[max(12px,1.5vmin)] font-bold leading-tight`;
+            // Updated font size to match meta row (max(10px, 1.2vmin))
+            titleEl.className = `text-gray-900 text-[max(10px,1.2vmin)] font-bold leading-tight`;
             titleEl.innerText = itemData.title;
 
+            // Meta Row (Author + Year)
             const metaRow = document.createElement('div');
-            metaRow.className = `flex flex-row justify-between items-end w-full text-gray-900 font-medium text-[max(12px,1.5vmin)] leading-none`;
+            metaRow.className = `flex flex-row justify-between items-start w-full text-gray-500 font-medium text-[max(10px,1.2vmin)] leading-none`;
             
             const authorEl = document.createElement('span');
             authorEl.innerText = itemData.author;
@@ -1353,26 +1415,24 @@
             metaRow.appendChild(authorEl);
             metaRow.appendChild(yearEl);
 
-            overlayContainer.appendChild(titleEl);
-            overlayContainer.appendChild(metaRow);
-
-            content.appendChild(overlayContainer);
+            infoBlock.appendChild(titleEl);
+            infoBlock.appendChild(metaRow);
             
-            content.onclick = () => applyFilter('title', itemData.title);
-        } else {
-            content.onclick = null;
+            // Allow clicking text to open project too
+            infoBlock.onclick = () => applyFilter('title', itemData.title);
+
+            anchor.appendChild(infoBlock);
         }
 
-        content.appendChild(img);
-        anchor.appendChild(content);
         return anchor;
     }
 
     const itemObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            const animatedContent = entry.target.querySelector('.scroll-item') || entry.target;
-            if (animatedContent.classList.contains('scroll-item')) {
-                entry.isIntersecting ? animatedContent.classList.add('is-visible') : animatedContent.classList.remove('is-visible');
+            // Now checking the target itself since we moved .scroll-item to the wrapper
+            const target = entry.target;
+            if (target.classList.contains('scroll-item')) {
+                entry.isIntersecting ? target.classList.add('is-visible') : target.classList.remove('is-visible');
             }
         });
     }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
