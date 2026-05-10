@@ -1,5 +1,5 @@
 import { fetchGalleryData } from './api.js';
-import { clearGridHTML, appendGridItem, updateGridClasses, updateScrollTrigger, setupInfiniteScroll, createGridItem, setGridPadding, BATCH_SIZE } from './gallery.js';
+import { clearGridHTML, appendGridItem, appendGridItems, updateGridClasses, updateScrollTrigger, setupInfiniteScroll, createGridItem, setGridPadding, BATCH_SIZE } from './gallery.js';
 import { UI, ICONS, createActiveFilterTag, createButtonHTML, updateMainButtonState, closeFilterMenu, initProjectSearch, initFilterUI, showError, hideError, getAdjustedPadding, setupUIEvents } from './ui.js';
 
 console.log("Initializing Architecture Dex v0.8.61...");
@@ -53,11 +53,14 @@ function adjustGridPadding() {
     setGridPadding(paddings.top, paddings.bottom);
 }
 
-if (UI.topUIContainer) {
-    const resizeObserver = new ResizeObserver(() => window.requestAnimationFrame(adjustGridPadding));
-    resizeObserver.observe(UI.topUIContainer);
-}
-window.addEventListener('resize', adjustGridPadding);
+let resizeTimer;
+const resizeObserver = new ResizeObserver(() => {
+    cancelAnimationFrame(resizeTimer);
+    resizeTimer = requestAnimationFrame(adjustGridPadding);
+});
+resizeObserver.observe(UI.topUIContainer);
+window.addEventListener('resize', adjustGridPadding, { passive: true });
+document.getElementById('top-inner-container').addEventListener('transitionend', adjustGridPadding);
 
 function loadNextBatch() {
     if (isLoading || currentCount >= activeFilteredItems.length) return;
@@ -67,9 +70,8 @@ function loadNextBatch() {
         const batchStart = currentCount;
         let nextBatch = activeFilteredItems.slice(currentCount, currentCount + BATCH_SIZE);
         let dataIndex = batchStart; 
-        nextBatch.forEach((itemData) => {
-            appendGridItem(createGridItem(itemData, dataIndex++, isProjectView));
-        });
+        const elements = nextBatch.map(itemData => createGridItem(itemData, dataIndex++, isProjectView));
+        appendGridItems(elements);
         currentCount += nextBatch.length;
         isLoading = false;
         updateScrollTrigger(currentCount < activeFilteredItems.length, false);
