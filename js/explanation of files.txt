@@ -1,0 +1,16 @@
+MAIN.JS
+
+Central controller. It imports everything, holds the application state, and handles the filtering logic. 
+Note that it sets window.applyFilter so the UI clicks can still trigger it.
+
+GALLERY.JS
+
+This file builds the grid items and handles the infinite scrolling layout.
+
+UI.JS
+
+This file handles the buttons, search menus, icons, and updating the visual metadata.
+
+API.JS
+
+This file has one job: talk to Google Sheets and turn the CSV into a Javascript array.
