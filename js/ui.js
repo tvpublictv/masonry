@@ -37,7 +37,6 @@ let subButtonWrappers = [];
 export let isFilterOpen = false;
 export let isHovering = false;
 export let isTouchInteraction = false;
-export let isFilterLocked = false;
 let closeTimeout = null;
 let isPinned = false;
 const PROJECT_VIEW_BOTTOM_PADDING = 30;
@@ -48,7 +47,7 @@ export function createButtonHTML(text, filterKey, iconSVG, isBold = false) {
     const fontClass = isBold ? "font-bold" : "font-medium";
     const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]";
     return `
-        <div class="aesthetic-glass aesthetic-glass-hover px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max max-w-[25vw] cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]"
+        <div class="aesthetic-glass aesthetic-glass-hover px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max max-w-[125vw] cursor-pointer hover:bg-white/50 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin]"
              onclick="window.applyFilter('${filterKey}', '${safeText}')">
             <div class="refraction-layer"></div>
             <div class="specular-layer"></div>
@@ -68,7 +67,7 @@ export function createActiveFilterTag(text, filterKey) {
      const closeSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">${ICONS.close}</svg>`;
      const leftIconHTML = showIcon ? `<div class="${iconClass}">${iconSVG}</div>` : '';
      return `
-        <div class="bg-black/80 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max max-w-[25vw] cursor-pointer hover:bg-black/90 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin] ${textSize} text-white font-medium leading-snug truncate"
+        <div class="bg-black/80 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max max-w-[125vw] cursor-pointer hover:bg-black/90 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin] ${textSize} text-white font-medium leading-snug truncate"
              onclick="window.clearFilter()">
             ${leftIconHTML}
             <span class="truncate">${text}</span>
@@ -151,11 +150,6 @@ export function closeFilterMenu(instant = false, lastActiveFilter = null) {
             UI.filterMainBtn.style.backgroundColor = '';
             UI.filterMainBtn.classList.add('bg-black/80', 'text-white', 'rounded-full');
         }
-
-        subButtonWrappers.forEach(wrap => {
-            const dd = wrap.querySelector('.dropdown-content');
-            if (dd && dd.classList.contains('absolute')) { dd.classList.remove('!opacity-100', '!visible'); }
-        });
     };
 
     if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
@@ -251,7 +245,7 @@ export function initFilterUI(uniqueValuesProvider) {
         const glassBtn = document.createElement('div');
         glassBtn.className = 'glass-base aesthetic-glass aesthetic-glass-hover h-full w-full rounded-full shadow-sm flex items-center justify-center transition-colors cursor-pointer';
 
-        const iconClass = "h-[max(14px,1.8vmin)] w-[max(14px,1.8vmin)] text-gray-900";
+        const iconClass = "h-[max(14px,1.8vmin)] w-[max(14px,1.8vmin)] text-gray-900 portrait-icon-lg";
         const refraction = document.createElement('div'); refraction.className = 'refraction-layer';
         const specular = document.createElement('div'); specular.className = 'specular-layer';
         const content = document.createElement('div');
@@ -264,6 +258,7 @@ export function initFilterUI(uniqueValuesProvider) {
         glassBtn.onclick = (e) => {
             e.stopPropagation();
             isPinned = true;
+            showPanel(key, label);
         };
 
         wrapper.addEventListener('mouseenter', () => { if (!isTouchInteraction) showPanel(key, label); });
@@ -343,10 +338,12 @@ export function setupUIEvents(getLastActiveFilter) {
     });
     UI.projectSearchInput.addEventListener('focus', () => {
     if (isFilterOpen) closeFilterMenu(true, getLastActiveFilter());
-    // Reset all items to visible and always show dropdown on focus
-    UI.projectSearchDropdown.querySelectorAll('.search-item').forEach(item => item.style.display = 'block');
-    UI.projectSearchDropdown.classList.add('panel-visible');
-});
+    });
+
+    UI.projectSearchWrapper.addEventListener('click', () => {
+        UI.projectSearchDropdown.querySelectorAll('.search-item').forEach(item => item.style.display = 'block');
+        UI.projectSearchDropdown.classList.add('panel-visible');
+    });
 
     UI.filterMainBtn.onclick = () => {
     if (getLastActiveFilter()) {
@@ -355,7 +352,6 @@ export function setupUIEvents(getLastActiveFilter) {
         // Already pinned → close and focus search
         isPinned = false;
         closeFilterMenu(true, getLastActiveFilter());
-        setTimeout(() => UI.projectSearchInput.focus(), 150);
     } else if (isFilterOpen && !isPinned) {
         // Hover-opened (animation may still be running) → first click just pins it
         isPinned = true;
