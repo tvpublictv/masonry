@@ -28,7 +28,9 @@ export function createGridItem(itemData, index, isProjectView) {
         ? `w-full h-auto block opacity-0 transition-all duration-700 pointer-events-none select-none`
         : `w-full h-full object-cover block transform transition-transform duration-[1050ms] group-hover:scale-110 pointer-events-none select-none opacity-0`; 
     img.loading = 'lazy';
+    img.decoding = 'async';
     img.alt = itemData.title;
+    if (index < 6) img.fetchPriority = 'high';
     img.draggable = false;
     
     img.onload = () => {
@@ -60,11 +62,11 @@ export function createGridItem(itemData, index, isProjectView) {
         infoBlock.className = `flex flex-col gap-0.5 mt-[0.5vmin] cursor-pointer`; 
         
         const titleEl = document.createElement('div');
-        titleEl.className = `text-gray-900 text-[max(10px,1.2vmin)] font-bold leading-tight`;
+        titleEl.className = `text-gray-900 text-[max(10px,1.2vmin)] font-bold leading-tight gallery-item-title`;
         titleEl.innerText = itemData.title;
 
         const metaRow = document.createElement('div');
-        metaRow.className = `flex flex-row justify-between items-start w-full text-gray-500 font-medium text-[max(10px,1.2vmin)] leading-none`;
+        metaRow.className = `flex flex-row justify-between items-start w-full text-gray-500 font-medium text-[max(10px,1.2vmin)] leading-none gallery-item-meta`;
         
         const authorEl = document.createElement('span');
         authorEl.innerText = itemData.author;
@@ -92,6 +94,13 @@ export function clearGridHTML() {
 export function appendGridItem(element) {
     galleryGrid.appendChild(element);
     itemObserver.observe(element);
+}
+
+export function appendGridItems(elements) {
+    const fragment = document.createDocumentFragment();
+    elements.forEach(el => fragment.appendChild(el));
+    galleryGrid.appendChild(fragment);
+    elements.forEach(el => itemObserver.observe(el));
 }
 
 export function updateGridClasses(isProjectView) {
