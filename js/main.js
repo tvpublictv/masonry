@@ -51,6 +51,19 @@ function getUniqueValues(key) {
 function adjustGridPadding() {
     const paddings = getAdjustedPadding(isProjectView);
     setGridPadding(paddings.top, paddings.bottom);
+    adjustDropdownPositions();
+}
+
+function adjustDropdownPositions() {
+    const row = document.querySelector('#top-inner-container > div:first-child');
+    const topInner = document.getElementById('top-inner-container');
+    if (!row || !topInner) return;
+    // offsetTop is 0 since there's no top padding, offsetHeight is the true rendered row height
+    const offset = row.offsetTop + row.offsetHeight + 4;
+    const fp = document.getElementById('filter-panel');
+    const sd = document.getElementById('project-search-dropdown');
+    if (fp) fp.style.top = `${offset}px`;
+    if (sd) sd.style.top = `${offset}px`;
 }
 
 let resizeTimer;
