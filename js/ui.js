@@ -360,7 +360,7 @@ export function setupUIEvents(getLastActiveFilter) {
         isPinned = true;
         openFilterMenu();
     }
-};
+    };
 
     UI.projectSearchInput.oninput = (e) => {
     const query = e.target.value.toLowerCase();
@@ -376,7 +376,40 @@ export function setupUIEvents(getLastActiveFilter) {
     // Show as long as there are items (empty query = show all)
     if (visibleCount > 0) UI.projectSearchDropdown.classList.add('panel-visible');
     else UI.projectSearchDropdown.classList.remove('panel-visible');
-};
+    };
+
+    // Detect keyboard dismissal via Android back button (visualViewport shrinks when keyboard opens, grows back when dismissed)
+    if (window.visualViewport) {
+        let lastVVHeight = window.visualViewport.height;
+        window.visualViewport.addEventListener('resize', () => {
+            const newHeight = window.visualViewport.height;
+            if (newHeight > lastVVHeight + 50) {
+                // Significant height gain = keyboard was dismissed
+                if (document.activeElement === UI.projectSearchInput) {
+                    UI.projectSearchInput.blur();
+                    UI.projectSearchDropdown.classList.remove('panel-visible');
+                    document.getElementById('dropdown-backdrop')?.classList.remove('active');
+                }
+            }
+            lastVVHeight = newHeight;
+        }, { passive: true });
+    }
+
+    document.addEventListener('pointerdown', (e) => {
+        const fp = document.getElementById('filter-panel');
+        const outsideFilterPanel   = !fp?.contains(e.target);
+        const outsideSearchDropdown = !UI.projectSearchDropdown?.contains(e.target);
+        const outsideFilterStrip   = !UI.filterOptionsStrip?.contains(e.target);
+        const outsideFilterWrapper = !UI.filterWrapper?.contains(e.target);
+        const outsideSearchWrapper = !UI.projectSearchWrapper?.contains(e.target);
+
+        if (outsideFilterPanel && outsideSearchDropdown && outsideFilterStrip && outsideFilterWrapper && outsideSearchWrapper) {
+            if (fp) fp.classList.remove('panel-visible');
+            UI.projectSearchDropdown.classList.remove('panel-visible');
+            if (document.activeElement === UI.projectSearchInput) UI.projectSearchInput.blur();
+            if (!isPinned) closeFilterMenu(false, getLastActiveFilter());
+        }
+    }, { passive: true });
 
     window.addEventListener('load', () => {
         setTimeout(() => {
