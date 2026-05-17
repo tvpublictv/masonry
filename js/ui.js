@@ -4,8 +4,8 @@ export const ICONS = {
     country: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>`,
     year: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>`,
     material: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>`,
-    type: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>`, 
-    category: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5" /></svg>`, 
+    type: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z" /></svg>`,
+    category: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 8.25h15m-16.5 7.5h15m-1.8-13.5l-3.9 19.5m-2.1-19.5l-3.9 19.5" /></svg>`,
     info: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" /></svg>`,
     menu: `<path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />`,
     close: `<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />`,
@@ -15,7 +15,7 @@ export const ICONS = {
 const filterLabels = [
     { label: "Author", key: "author" }, { label: "Country", key: "country" }, { label: "Year", key: "year" },
     { label: "Photographer", key: "photographer" }, { label: "Material", key: "material" },
-    { label: "Type", key: "type" }, { label: "Topic", key: "category" } 
+    { label: "Type", key: "type" }, { label: "Topic", key: "category" }
 ];
 
 export const UI = {
@@ -41,6 +41,8 @@ let closeTimeout = null;
 let isPinned = false;
 const PROJECT_VIEW_BOTTOM_PADDING = 30;
 
+// ─── BUTTON HTML ───────────────────────────────────────────────────────────────
+
 export function createButtonHTML(text, filterKey, iconSVG, isBold = false) {
     const safeText = text.replace(/'/g, "\\'");
     const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-gray-700 mr-[0.8vmin] flex-shrink-0";
@@ -59,16 +61,18 @@ export function createButtonHTML(text, filterKey, iconSVG, isBold = false) {
     `;
 }
 
+// Each active-filter tag now calls window.removeFilter (removes just this filter)
 export function createActiveFilterTag(text, filterKey) {
-     const showIcon = filterKey !== 'title';
-     const iconSVG = showIcon ? (ICONS[filterKey] || '') : '';
-     const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-white mr-[0.8vmin] flex-shrink-0";
-     const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]";
-     const closeSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">${ICONS.close}</svg>`;
-     const leftIconHTML = showIcon ? `<div class="${iconClass}">${iconSVG}</div>` : '';
-     return `
+    const safeText = text.replace(/'/g, "\\'");
+    const showIcon = filterKey !== 'title';
+    const iconSVG = showIcon ? (ICONS[filterKey] || '') : '';
+    const iconClass = "h-[max(12px,1.5vmin)] w-[max(12px,1.5vmin)] portrait:h-[max(13.2px,1.65vmin)] portrait:w-[max(13.2px,1.65vmin)] text-white mr-[0.8vmin] flex-shrink-0";
+    const textSize = "text-[max(12px,1.5vmin)] portrait:text-[max(13.2px,1.65vmin)]";
+    const closeSVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-full h-full">${ICONS.close}</svg>`;
+    const leftIconHTML = showIcon ? `<div class="${iconClass}">${iconSVG}</div>` : '';
+    return `
         <div class="bg-black/80 backdrop-blur-md px-[1vmin] py-[0.5vmin] portrait:px-[1.5vmin] portrait:py-[0.75vmin] flex items-center w-max max-w-[125vw] cursor-pointer hover:bg-black/90 transition-colors rounded-[0.5vmin] shadow-sm mb-[0.5vmin] mr-[0.5vmin] ${textSize} text-white font-medium leading-snug truncate"
-             onclick="window.clearFilter()">
+             onclick="window.removeFilter('${filterKey}', '${safeText}')">
             ${leftIconHTML}
             <span class="truncate">${text}</span>
             <div class="${iconClass} ml-2 !mr-0 !text-white/70 hover:!text-white flex-shrink-0">${closeSVG}</div>
@@ -76,16 +80,20 @@ export function createActiveFilterTag(text, filterKey) {
     `;
 }
 
-export function updateMainButtonState(lastActiveFilter) {
+// ─── BUTTON STATE ──────────────────────────────────────────────────────────────
+
+// activeFilters is now an array; button shows X when any filter is active.
+export function updateMainButtonState(activeFilters) {
+    const hasActive = Array.isArray(activeFilters) ? activeFilters.length > 0 : !!activeFilters;
     const wrapper = UI.filterMainBtn.querySelector('.glass-content-wrapper');
     const svg = wrapper ? wrapper.querySelector('svg') : UI.filterMainBtn.querySelector('svg');
-    
-    if (lastActiveFilter) {
+
+    if (hasActive) {
         UI.filterMainBtn.classList.remove('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900', 'hover:bg-white/50');
         UI.filterMainBtn.classList.add('bg-black/80', 'text-white', 'hover:bg-black/90', 'rounded-full', 'overflow-hidden');
         const glassLayers = UI.filterMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
         glassLayers.forEach(l => l.style.display = 'none');
-        if(svg) svg.innerHTML = ICONS.close;
+        if (svg) svg.innerHTML = ICONS.close;
     } else {
         UI.filterMainBtn.classList.add('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900', 'rounded-full', 'overflow-hidden');
         UI.filterMainBtn.classList.remove('bg-black/80', 'text-white', 'hover:bg-black/90');
@@ -93,9 +101,21 @@ export function updateMainButtonState(lastActiveFilter) {
         glassLayers.forEach(l => l.style.display = 'block');
         UI.filterMainBtn.style.backgroundColor = '';
         UI.filterMainBtn.style.color = '';
-        if(svg) svg.innerHTML = ICONS.menu;
+        if (svg) svg.innerHTML = ICONS.menu;
     }
 }
+
+// Highlight strip category buttons whose filter key is currently active
+export function updateStripActiveStates(activeFilters) {
+    const activeKeys = new Set((activeFilters || []).map(f => f.key));
+    UI.filterOptionsStrip.querySelectorAll('[data-filter-key]').forEach(wrapper => {
+        const key = wrapper.dataset.filterKey;
+        const btn = wrapper.querySelector('.glass-base');
+        if (btn) btn.classList.toggle('strip-btn-active', activeKeys.has(key));
+    });
+}
+
+// ─── OPEN / CLOSE STRIP ────────────────────────────────────────────────────────
 
 export function openFilterMenu() {
     if (closeTimeout) { clearTimeout(closeTimeout); closeTimeout = null; }
@@ -112,7 +132,7 @@ export function openFilterMenu() {
     UI.filterMainBtn.style.backgroundColor = 'rgba(0,0,0,0.7)';
     UI.filterMainBtn.style.color = 'white';
 
-    // Swap hamburger → magnifier
+    // Hamburger → magnifier
     const mainSvg = UI.filterMainBtn.querySelector('svg');
     if (mainSvg) mainSvg.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />`;
 
@@ -120,12 +140,40 @@ export function openFilterMenu() {
     subButtons.forEach((btn, idx) => { setTimeout(() => { btn.classList.add('glass-active'); }, idx * 30); });
 }
 
-export function closeFilterMenu(instant = false, lastActiveFilter = null) {
+// activeFilters: array — strip is kept open when non-title filters are active.
+export function closeFilterMenu(instant = false, activeFilters = []) {
+    const hasNonTitleFilter = Array.isArray(activeFilters) && activeFilters.some(f => f.key !== 'title');
+    const hasActive = Array.isArray(activeFilters) ? activeFilters.length > 0 : false;
+
     const performClose = () => {
+        // Always close the floating filter-panel dropdown
+        const fp = document.getElementById('filter-panel');
+        if (fp) fp.classList.remove('panel-visible');
+
+        // If non-title filters are active, keep the strip pinned open
+        if (hasNonTitleFilter) {
+            isPinned = true;
+            // Ensure strip is visible (it should already be, but guard just in case)
+            if (!isFilterOpen) {
+                isFilterOpen = true;
+                UI.projectSearchWrapper.classList.add('search-collapsed');
+                UI.filterOptionsStrip.classList.remove('strip-hidden');
+                UI.filterOptionsStrip.classList.add('strip-visible');
+                const subButtons = UI.filterOptionsStrip.querySelectorAll('.glass-base');
+                subButtons.forEach(btn => btn.classList.add('glass-active'));
+            }
+            return;
+        }
+
+        // Guard: don't close if an input inside the strip/panel has focus
         const active = document.activeElement;
-        const isInputFocused = active && (active === UI.projectSearchInput || (active.tagName === 'INPUT' && UI.filterOptionsStrip.contains(active)));
+        const isInputFocused = active && (
+            active === UI.projectSearchInput ||
+            (active.tagName === 'INPUT' && UI.filterOptionsStrip.contains(active))
+        );
         if (isInputFocused) return;
         if (!isFilterOpen) return;
+
         isFilterOpen = false;
         isPinned = false;
 
@@ -133,20 +181,17 @@ export function closeFilterMenu(instant = false, lastActiveFilter = null) {
         UI.filterOptionsStrip.classList.remove('strip-visible');
         UI.filterOptionsStrip.classList.add('strip-hidden');
 
-        // Hide filter panel
-        const fp = document.getElementById('filter-panel');
-        if (fp) fp.classList.remove('panel-visible');
-
-        if (!lastActiveFilter) {
+        // Restore main button appearance
+        if (!hasActive) {
             UI.filterMainBtn.style.backgroundColor = '';
             UI.filterMainBtn.style.color = '';
             UI.filterMainBtn.classList.add('aesthetic-glass', 'aesthetic-glass-hover', 'text-gray-900');
             const glassLayers = UI.filterMainBtn.querySelectorAll('.refraction-layer, .specular-layer');
             glassLayers.forEach(l => l.style.display = 'block');
-            // Restore hamburger icon
             const mainSvg = UI.filterMainBtn.querySelector('svg');
             if (mainSvg) mainSvg.innerHTML = ICONS.menu;
         } else {
+            // Title-only filter active → keep dark button (updateMainButtonState handles icon)
             UI.filterMainBtn.style.backgroundColor = '';
             UI.filterMainBtn.classList.add('bg-black/80', 'text-white', 'rounded-full');
         }
@@ -157,34 +202,127 @@ export function closeFilterMenu(instant = false, lastActiveFilter = null) {
     else closeTimeout = setTimeout(performClose, 400);
 }
 
+// ─── FILTER PANEL (dropdown under strip buttons) ───────────────────────────────
+
+// Keys searched when the user types (all except title and year)
+const SEARCH_CATEGORY_KEYS = ['author', 'country', 'photographer', 'material', 'type', 'category'];
+
+function resetSearchDropdownToTitles() {
+    const dropdown = UI.projectSearchDropdown;
+    const titleGrid = dropdown.querySelector('[data-section="titles"]');
+    const catGrid   = dropdown.querySelector('[data-section="categories"]');
+    const divider   = dropdown.querySelector('[data-search-divider]');
+    if (titleGrid) { titleGrid.querySelectorAll('.search-title-item').forEach(i => i.style.display = ''); titleGrid.style.display = ''; }
+    if (catGrid)   catGrid.style.display = 'none';
+    if (divider)   divider.style.display = 'none';
+}
+
 export function initProjectSearch(uniqueValuesProvider) {
     UI.projectSearchDropdown.innerHTML = '';
 
     const inner = document.createElement('div');
     inner.className = 'bg-white/90 backdrop-blur-md rounded-[1vmin] shadow-xl overflow-hidden';
+    inner.setAttribute('data-lenis-prevent', '');
 
-    const grid = document.createElement('div');
-    grid.className = 'filter-panel-grid';
-    grid.setAttribute('data-lenis-prevent', '');
+    // ── Title section (default view) ──
+    const titleGrid = document.createElement('div');
+    titleGrid.className = 'filter-panel-grid';
+    titleGrid.dataset.section = 'titles';
 
     uniqueValuesProvider('title').forEach(title => {
         const item = document.createElement('div');
-        item.className = 'search-item filter-item px-[1.5vmin] py-[1vmin] text-gray-900 text-[max(12px,1.5vmin)] font-medium hover:bg-gray-100 cursor-pointer transition-colors border-b border-gray-100 last:border-0';
+        item.className = 'search-item search-title-item filter-item px-[1.5vmin] py-[1vmin] text-gray-900 text-[max(12px,1.5vmin)] font-medium hover:bg-gray-100 cursor-pointer transition-colors border-b border-gray-100 last:border-0';
         item.innerText = title;
         item.title = title;
+        item.dataset.searchText = title.toLowerCase();
         item.onclick = () => {
             window.applyFilter('title', title);
             UI.projectSearchInput.value = '';
             UI.projectSearchDropdown.classList.remove('panel-visible');
         };
-        grid.appendChild(item);
+        titleGrid.appendChild(item);
     });
 
-    inner.appendChild(grid);
+    // ── Divider (visible only when both sections have results while typing) ──
+    const divider = document.createElement('div');
+    divider.className = 'border-t border-gray-200 my-[0.5vmin] mx-[1.5vmin]';
+    divider.dataset.searchDivider = '';
+    divider.style.display = 'none';
+
+    // ── Category section (visible only while typing) ──
+    const catGrid = document.createElement('div');
+    catGrid.className = 'filter-panel-grid';
+    catGrid.dataset.section = 'categories';
+    catGrid.style.display = 'none';
+
+    const iconSize = 'h-[max(11px,1.3vmin)] w-[max(11px,1.3vmin)]';
+
+    SEARCH_CATEGORY_KEYS.forEach(key => {
+        uniqueValuesProvider(key).forEach(val => {
+            const item = document.createElement('div');
+            item.className = 'search-item search-cat-item filter-item px-[1.5vmin] py-[1vmin] text-gray-700 text-[max(12px,1.5vmin)] font-medium hover:bg-gray-100 cursor-pointer transition-colors border-b border-gray-100 last:border-0 flex items-center gap-[0.7vmin]';
+            item.dataset.searchText = val.toLowerCase();
+            item.dataset.filterKey = key;
+            item.title = val;
+
+            const iconEl = document.createElement('span');
+            iconEl.className = `flex-shrink-0 text-gray-400 ${iconSize}`;
+            iconEl.innerHTML = ICONS[key] || '';
+
+            const textEl = document.createElement('span');
+            textEl.className = 'truncate';
+            textEl.innerText = val;
+
+            item.append(iconEl, textEl);
+            item.onclick = () => {
+                window.applyFilter(key, val);
+                UI.projectSearchInput.value = '';
+                UI.projectSearchDropdown.classList.remove('panel-visible');
+            };
+            catGrid.appendChild(item);
+        });
+    });
+
+    inner.append(titleGrid, divider, catGrid);
     UI.projectSearchDropdown.appendChild(inner);
+
+    // ── oninput: empty = titles only; typing = cross-category search with icons ──
+    UI.projectSearchInput.oninput = (e) => {
+        const query = e.target.value.toLowerCase().trim();
+
+        if (!query) {
+            resetSearchDropdownToTitles();
+            const hasAny = titleGrid.querySelector('.search-title-item') !== null;
+            UI.projectSearchDropdown.classList.toggle('panel-visible', hasAny);
+            return;
+        }
+
+        // Filter titles
+        let titleMatches = 0;
+        titleGrid.querySelectorAll('.search-title-item').forEach(item => {
+            const show = item.dataset.searchText.includes(query);
+            item.style.display = show ? '' : 'none';
+            if (show) titleMatches++;
+        });
+        titleGrid.style.display = titleMatches > 0 ? '' : 'none';
+
+        // Filter category items
+        let catMatches = 0;
+        catGrid.querySelectorAll('.search-cat-item').forEach(item => {
+            const show = item.dataset.searchText.includes(query);
+            item.style.display = show ? '' : 'none';
+            if (show) catMatches++;
+        });
+        catGrid.style.display = catMatches > 0 ? '' : 'none';
+
+        // Divider only when both sections have visible results
+        divider.style.display = (titleMatches > 0 && catMatches > 0) ? '' : 'none';
+
+        UI.projectSearchDropdown.classList.toggle('panel-visible', (titleMatches + catMatches) > 0);
+    };
 }
 
-export function initFilterUI(uniqueValuesProvider) {
+export function initFilterUI(uniqueValuesProvider, getAvailableValues) {
     UI.filterOptionsStrip.innerHTML = '';
     subButtonWrappers.length = 0;
 
@@ -200,7 +338,8 @@ export function initFilterUI(uniqueValuesProvider) {
 
     const showPanel = (key, label) => {
         cancelHide();
-        const values = uniqueValuesProvider(key);
+        // Only show values that produce >= 1 result given the other active filters
+        const values = getAvailableValues ? getAvailableValues(key) : uniqueValuesProvider(key);
 
         const itemsHTML = values.map(val => {
             const safe = val.replace(/'/g, "\\'");
@@ -230,7 +369,7 @@ export function initFilterUI(uniqueValuesProvider) {
         filterPanel.classList.add('panel-visible');
     };
 
-    // Strip-level hover: moving between buttons keeps panel open
+    // Strip-level hover: keep panel open while moving between buttons
     UI.filterOptionsStrip.addEventListener('mouseenter', cancelHide);
     UI.filterOptionsStrip.addEventListener('mouseleave', hidePanel);
 
@@ -241,6 +380,7 @@ export function initFilterUI(uniqueValuesProvider) {
     filterLabels.forEach(({ label, key }) => {
         const wrapper = document.createElement('div');
         wrapper.className = 'cursor-pointer w-full h-full';
+        wrapper.dataset.filterKey = key; // used by updateStripActiveStates
 
         const glassBtn = document.createElement('div');
         glassBtn.className = 'glass-base aesthetic-glass aesthetic-glass-hover h-full w-full rounded-full shadow-sm flex items-center justify-center transition-colors cursor-pointer';
@@ -254,7 +394,6 @@ export function initFilterUI(uniqueValuesProvider) {
 
         glassBtn.append(refraction, specular, content);
 
-        // Click pins the strip open
         glassBtn.onclick = (e) => {
             e.stopPropagation();
             isPinned = true;
@@ -268,6 +407,8 @@ export function initFilterUI(uniqueValuesProvider) {
     });
 }
 
+// ─── ERROR ────────────────────────────────────────────────────────────────────
+
 export function showError(msg) {
     UI.errorContainer.classList.remove('hidden');
     UI.errorMessage.innerText = msg;
@@ -277,29 +418,38 @@ export function hideError() {
     UI.errorContainer.classList.add('hidden');
 }
 
+// ─── PADDING ──────────────────────────────────────────────────────────────────
+
 export function getAdjustedPadding(isProjectView) {
     let top = '0px';
     if (UI.topUIContainer) {
         const bottom = UI.topUIContainer.getBoundingClientRect().bottom;
-        const gap = window.innerWidth * 0.015; 
+        const gap = window.innerWidth * 0.015;
         top = `${bottom + gap}px`;
     }
 
     const computedStyle = window.getComputedStyle(UI.bottomNavContainer);
-    const bottomOffset = parseFloat(computedStyle.bottom); 
-    
-    let totalBottomPadding = isProjectView && !UI.externalLinkBtn.classList.contains('hidden') 
-        ? PROJECT_VIEW_BOTTOM_PADDING 
-        : bottomOffset + 20; 
+    const bottomOffset = parseFloat(computedStyle.bottom);
+
+    let totalBottomPadding = isProjectView && !UI.externalLinkBtn.classList.contains('hidden')
+        ? PROJECT_VIEW_BOTTOM_PADDING
+        : bottomOffset + 20;
 
     return { top, bottom: `calc(${totalBottomPadding}px + env(safe-area-inset-bottom))` };
 }
 
-export function setupUIEvents(getLastActiveFilter) {
+// ─── EVENT SETUP ──────────────────────────────────────────────────────────────
+
+// getActiveFilters: () => window.activeFilters (the array)
+export function setupUIEvents(getActiveFilters) {
     const filterPanel = document.getElementById('filter-panel');
 
     UI.filterWrapper.addEventListener('mouseenter', () => {
-        if (isTouchInteraction || getLastActiveFilter()) return;
+        // Don't open on hover if we're in project (title) view
+        if (isTouchInteraction) return;
+        const filters = getActiveFilters();
+        const isTitleOnly = filters.length === 1 && filters[0].key === 'title';
+        if (isTitleOnly) return;
         isHovering = true;
         openFilterMenu();
     });
@@ -310,7 +460,6 @@ export function setupUIEvents(getLastActiveFilter) {
         isHovering = true;
     });
 
-    // Filter panel is part of the hover zone — cancel strip close when entering it
     if (filterPanel) {
         filterPanel.addEventListener('mouseenter', () => {
             if (isTouchInteraction) return;
@@ -319,17 +468,17 @@ export function setupUIEvents(getLastActiveFilter) {
         });
         filterPanel.addEventListener('mouseleave', () => {
             isHovering = false;
-            if (!isPinned) closeFilterMenu(false, getLastActiveFilter());
+            if (!isPinned) closeFilterMenu(false, getActiveFilters());
         });
     }
 
     UI.filterWrapper.addEventListener('mouseleave', () => {
         isHovering = false;
-        if (!isPinned) closeFilterMenu(false, getLastActiveFilter());
+        if (!isPinned) closeFilterMenu(false, getActiveFilters());
     });
     UI.filterOptionsStrip.addEventListener('mouseleave', () => {
         isHovering = false;
-        if (!isPinned) closeFilterMenu(false, getLastActiveFilter());
+        if (!isPinned) closeFilterMenu(false, getActiveFilters());
     });
     UI.filterWrapper.addEventListener('touchstart', () => { isTouchInteraction = true; }, { passive: true });
 
@@ -337,54 +486,42 @@ export function setupUIEvents(getLastActiveFilter) {
         setTimeout(() => UI.projectSearchDropdown.classList.remove('panel-visible'), 200);
     });
     UI.projectSearchInput.addEventListener('focus', () => {
-    if (isFilterOpen) closeFilterMenu(true, getLastActiveFilter());
+        if (isFilterOpen) closeFilterMenu(true, getActiveFilters());
     });
 
     UI.projectSearchWrapper.addEventListener('click', () => {
-        UI.projectSearchDropdown.querySelectorAll('.search-item').forEach(item => item.style.display = 'block');
+        // Reset to title-only view on click; oninput takes over once user types
+        resetSearchDropdownToTitles();
         UI.projectSearchDropdown.classList.add('panel-visible');
     });
 
     UI.filterMainBtn.onclick = () => {
-    if (getLastActiveFilter()) {
-        window.clearFilter();
-    } else if (isFilterOpen && isPinned) {
-        // Already pinned → close and focus search
-        isPinned = false;
-        closeFilterMenu(true, getLastActiveFilter());
-    } else if (isFilterOpen && !isPinned) {
-        // Hover-opened (animation may still be running) → first click just pins it
-        isPinned = true;
-    } else {
-        // Strip closed → open and pin
-        isPinned = true;
-        openFilterMenu();
-    }
-    };
-
-    UI.projectSearchInput.oninput = (e) => {
-    const query = e.target.value.toLowerCase();
-    const items = UI.projectSearchDropdown.querySelectorAll('.search-item');
-    let visibleCount = 0;
-    items.forEach(item => {
-        if (query === '' || item.innerText.toLowerCase().includes(query)) {
-            item.style.display = 'block'; visibleCount++;
+        const filters = getActiveFilters();
+        if (filters.length > 0) {
+            // Any active filter → clear all
+            window.clearFilter();
+        } else if (isFilterOpen && isPinned) {
+            // Pinned open → unpin and close
+            isPinned = false;
+            closeFilterMenu(true, filters);
+        } else if (isFilterOpen && !isPinned) {
+            // Hover-open → pin it
+            isPinned = true;
         } else {
-            item.style.display = 'none';
+            // Closed → open and pin
+            isPinned = true;
+            openFilterMenu();
         }
-    });
-    // Show as long as there are items (empty query = show all)
-    if (visibleCount > 0) UI.projectSearchDropdown.classList.add('panel-visible');
-    else UI.projectSearchDropdown.classList.remove('panel-visible');
     };
 
-    // Detect keyboard dismissal via Android back button (visualViewport shrinks when keyboard opens, grows back when dismissed)
+    // Note: projectSearchInput.oninput is set in initProjectSearch
+    //       so it has access to the pre-built title / category DOM nodes.
+
     if (window.visualViewport) {
         let lastVVHeight = window.visualViewport.height;
         window.visualViewport.addEventListener('resize', () => {
             const newHeight = window.visualViewport.height;
             if (newHeight > lastVVHeight + 50) {
-                // Significant height gain = keyboard was dismissed
                 if (document.activeElement === UI.projectSearchInput) {
                     UI.projectSearchInput.blur();
                     UI.projectSearchDropdown.classList.remove('panel-visible');
@@ -397,17 +534,18 @@ export function setupUIEvents(getLastActiveFilter) {
 
     document.addEventListener('pointerdown', (e) => {
         const fp = document.getElementById('filter-panel');
-        const outsideFilterPanel   = !fp?.contains(e.target);
+        const outsideFilterPanel    = !fp?.contains(e.target);
         const outsideSearchDropdown = !UI.projectSearchDropdown?.contains(e.target);
-        const outsideFilterStrip   = !UI.filterOptionsStrip?.contains(e.target);
-        const outsideFilterWrapper = !UI.filterWrapper?.contains(e.target);
-        const outsideSearchWrapper = !UI.projectSearchWrapper?.contains(e.target);
+        const outsideFilterStrip    = !UI.filterOptionsStrip?.contains(e.target);
+        const outsideFilterWrapper  = !UI.filterWrapper?.contains(e.target);
+        const outsideSearchWrapper  = !UI.projectSearchWrapper?.contains(e.target);
 
         if (outsideFilterPanel && outsideSearchDropdown && outsideFilterStrip && outsideFilterWrapper && outsideSearchWrapper) {
             if (fp) fp.classList.remove('panel-visible');
             UI.projectSearchDropdown.classList.remove('panel-visible');
             if (document.activeElement === UI.projectSearchInput) UI.projectSearchInput.blur();
-            if (!isPinned) closeFilterMenu(false, getLastActiveFilter());
+            // Only close strip if no non-title filters are keeping it pinned
+            if (!isPinned) closeFilterMenu(false, getActiveFilters());
         }
     }, { passive: true });
 

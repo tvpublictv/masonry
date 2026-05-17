@@ -173,6 +173,21 @@ img {
     -webkit-user-select: none;
 }
 
+/* --- ACTIVE FILTER CATEGORY BUTTON (strip) --- */
+.strip-btn-active {
+    background-color: rgba(0, 0, 0, 0.75) !important;
+    backdrop-filter: blur(12px) opacity(1) !important;
+    -webkit-backdrop-filter: blur(12px) opacity(1) !important;
+}
+.strip-btn-active .refraction-layer,
+.strip-btn-active .specular-layer {
+    opacity: 0 !important;
+}
+.strip-btn-active svg {
+    color: white !important;
+    stroke: white !important;
+}
+
 #project-search-wrapper {
     transition: flex-grow 0.5s cubic-bezier(0.4, 0, 0.2, 1), width 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
     will-change: flex-grow, width;
